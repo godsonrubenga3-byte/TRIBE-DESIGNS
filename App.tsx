@@ -6,12 +6,7 @@ import {
   Menu, 
   X, 
   Sun, 
-  Moon,
-  Smartphone,
-  Monitor,
-  RefreshCw,
-  Maximize2,
-  Minimize2
+  Moon
 } from 'lucide-react';
 import { Theme, CartItem, Product } from './types';
 import LandingPage from './pages/LandingPage';
@@ -63,7 +58,6 @@ const App: React.FC = () => {
   });
 
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isMobileView, setIsMobileView] = useState(false);
 
   useEffect(() => {
     if (theme === Theme.DARK) {
@@ -107,11 +101,9 @@ const App: React.FC = () => {
   return (
     <AppContext.Provider value={{ theme, setTheme, cart, addToCart, removeFromCart, toggleCart, isCartOpen }}>
       <HashRouter>
-        <div className={`min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 selection:bg-amber-400 selection:text-black transition-all duration-500 ${
-          isMobileView ? 'max-w-[400px] mx-auto shadow-2xl border-x border-zinc-200 dark:border-zinc-800' : ''
-        }`}>
-          <Navbar isMobileView={isMobileView} />
-          <main className="pt-20">
+        <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 selection:bg-amber-400 selection:text-black transition-all duration-500 w-full">
+          <Navbar />
+          <main className="pt-16 md:pt-20">
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/shop" element={<ShopPage />} />
@@ -122,70 +114,9 @@ const App: React.FC = () => {
           </main>
           <Footer />
           <CartSidebar />
-          
-          <ViewControls 
-            isMobileView={isMobileView} 
-            setIsMobileView={setIsMobileView} 
-          />
         </div>
       </HashRouter>
     </AppContext.Provider>
-  );
-};
-
-const ViewControls: React.FC<{ isMobileView: boolean; setIsMobileView: (v: boolean) => void }> = ({ isMobileView, setIsMobileView }) => {
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-        setIsFullscreen(false);
-      }
-    }
-  };
-
-  const reloadApp = () => {
-    window.location.reload();
-  };
-
-  return (
-    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[100] flex items-center gap-1 p-1.5 bg-black/80 dark:bg-white/90 backdrop-blur-xl rounded-full shadow-2xl border border-white/10 dark:border-black/10 transition-all hover:scale-105">
-      <button 
-        onClick={() => setIsMobileView(false)}
-        className={`p-3 rounded-full transition-all ${!isMobileView ? 'bg-amber-500 text-black shadow-lg' : 'text-zinc-400 hover:text-white dark:hover:text-black'}`}
-        title="Desktop View"
-      >
-        <Monitor size={18} />
-      </button>
-      <button 
-        onClick={() => setIsMobileView(true)}
-        className={`p-3 rounded-full transition-all ${isMobileView ? 'bg-amber-500 text-black shadow-lg' : 'text-zinc-400 hover:text-white dark:hover:text-black'}`}
-        title="Mobile View"
-      >
-        <Smartphone size={18} />
-      </button>
-      
-      <div className="w-px h-6 bg-zinc-700 dark:bg-zinc-300 mx-1 opacity-50"></div>
-      
-      <button 
-        onClick={reloadApp}
-        className="p-3 rounded-full text-zinc-400 hover:text-white dark:hover:text-black hover:bg-white/10 dark:hover:bg-black/10 transition-all"
-        title="Reload App"
-      >
-        <RefreshCw size={18} />
-      </button>
-      <button 
-        onClick={toggleFullscreen}
-        className="p-3 rounded-full text-zinc-400 hover:text-white dark:hover:text-black hover:bg-white/10 dark:hover:bg-black/10 transition-all"
-        title="Toggle Fullscreen"
-      >
-        {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-      </button>
-    </div>
   );
 };
 
@@ -199,7 +130,7 @@ const LogoIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
-const Navbar = ({ isMobileView }: { isMobileView: boolean }) => {
+const Navbar = () => {
   const { theme, setTheme, cart, toggleCart } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
@@ -211,17 +142,15 @@ const Navbar = ({ isMobileView }: { isMobileView: boolean }) => {
   ];
 
   return (
-    <nav className={`fixed top-0 z-50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 transition-all duration-500 ${
-      isMobileView ? 'w-full max-w-[400px] left-1/2 -translate-x-1/2' : 'left-0 right-0'
-    }`}>
+    <nav className="fixed top-0 z-50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 transition-all duration-500 left-0 right-0 w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-16 md:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3">
-            <div className="w-10 h-10 flex items-center justify-center rounded-full">
+          <Link to="/" className="flex items-center space-x-3 group">
+            <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full transition-transform group-hover:rotate-180 duration-500">
               <LogoIcon className="w-full h-full" />
             </div>
-            <span className="font-poppins font-semibold text-xl tracking-wide text-zinc-800 dark:text-zinc-200">
+            <span className="font-poppins font-semibold text-lg md:text-xl tracking-wide text-zinc-800 dark:text-zinc-200">
               TRIBE<span className="text-amber-500 font-bold mx-0.5">•</span>DESIGNS
             </span>
           </Link>
@@ -240,26 +169,26 @@ const Navbar = ({ isMobileView }: { isMobileView: boolean }) => {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 md:space-x-4">
             <button 
               onClick={() => setTheme(theme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT)}
               className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             >
-              {theme === Theme.LIGHT ? <Moon size={20} /> : <Sun size={20} />}
+              {theme === Theme.LIGHT ? <Moon size={18} /> : <Sun size={18} />}
             </button>
             <button 
               onClick={toggleCart}
               className="relative p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             >
-              <ShoppingBag size={20} />
+              <ShoppingBag size={18} />
               {cart.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-amber-500 text-black text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                   {cart.reduce((acc, i) => acc + i.quantity, 0)}
                 </span>
               )}
             </button>
-            <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            <button className="md:hidden p-2" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
@@ -267,14 +196,14 @@ const Navbar = ({ isMobileView }: { isMobileView: boolean }) => {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col items-center">
+        <div className="md:hidden bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 animate-in slide-in-from-top-4">
+          <div className="px-2 pt-2 pb-6 space-y-2 sm:px-3 flex flex-col items-center">
             {navLinks.map(link => (
               <Link 
                 key={link.path} 
                 to={link.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-3 py-4 text-lg font-bold tracking-widest hover:text-amber-500"
+                className="block px-3 py-4 text-xl font-syne font-bold tracking-widest hover:text-amber-500 w-full text-center"
               >
                 {link.name}
               </Link>
@@ -354,18 +283,18 @@ const CartSidebar = () => {
 };
 
 const Footer = () => (
-  <footer className="bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 py-16 px-6">
-    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
+  <footer className="bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 py-12 md:py-16 px-6">
+    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
       <div className="col-span-1 md:col-span-2">
         <div className="flex items-center space-x-4 mb-6">
-          <LogoIcon className="w-16 h-16" />
+          <LogoIcon className="w-12 h-12 md:w-16 md:h-16" />
           <div className="font-poppins">
-            <h3 className="font-semibold text-2xl tracking-wider text-zinc-800 dark:text-zinc-200">TRIBE•DESIGNS</h3>
-            <p className="text-xl font-medium text-zinc-600 dark:text-zinc-400">.54.</p>
-            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-500 tracking-[0.2em]">PRIDE IDENTITY</p>
+            <h3 className="font-semibold text-xl md:text-2xl tracking-wider text-zinc-800 dark:text-zinc-200">TRIBE•DESIGNS</h3>
+            <p className="text-lg md:text-xl font-medium text-zinc-600 dark:text-zinc-400">.54.</p>
+            <p className="text-xs md:text-sm font-medium text-zinc-500 dark:text-zinc-500 tracking-[0.2em]">PRIDE IDENTITY</p>
           </div>
         </div>
-        <p className="text-zinc-500 dark:text-zinc-400 max-w-sm mb-8">
+        <p className="text-zinc-500 dark:text-zinc-400 max-w-sm mb-8 text-sm md:text-base">
           The new standard in African sportswear. Custom-made, high-performance, and deeply rooted in our heritage. Designed for the youth of the world.
         </p>
         <div className="flex space-x-4">

@@ -78,16 +78,16 @@ const PostItem: React.FC<{ post: Post; onLike: (id: number) => void; onComment: 
     return (
         <div className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-xl transition-all duration-300">
             <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden border-2 border-amber-500 p-0.5">
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden border-2 border-amber-500 p-0.5">
                     <img src={post.avatar} alt={post.author} className="w-full h-full rounded-full object-cover" />
                 </div>
                 <div>
-                    <h4 className="font-bold text-lg leading-none mb-1 text-zinc-900 dark:text-zinc-100">{post.handle}</h4>
+                    <h4 className="font-bold text-base md:text-lg leading-none mb-1 text-zinc-900 dark:text-zinc-100">{post.handle}</h4>
                     <span className="text-[10px] text-zinc-400 uppercase font-black tracking-widest">{post.timestamp}</span>
                 </div>
             </div>
             
-            <p className="mb-6 text-zinc-700 dark:text-zinc-300 font-medium text-lg leading-relaxed whitespace-pre-wrap">
+            <p className="mb-6 text-zinc-700 dark:text-zinc-300 font-medium text-base md:text-lg leading-relaxed whitespace-pre-wrap">
                 {post.content}
             </p>
             
@@ -97,7 +97,7 @@ const PostItem: React.FC<{ post: Post; onLike: (id: number) => void; onComment: 
                 </div>
             )}
             
-            <div className="flex gap-8 text-zinc-400 font-bold text-xs uppercase tracking-widest pt-4 border-t border-zinc-100 dark:border-zinc-800">
+            <div className="flex gap-8 text-zinc-400 font-bold text-[10px] md:text-xs uppercase tracking-widest pt-4 border-t border-zinc-100 dark:border-zinc-800">
                 <button 
                     onClick={() => onLike(post.id)}
                     className={`flex items-center gap-2 transition-colors ${post.isLiked ? 'text-amber-500' : 'hover:text-amber-500'}`}
@@ -230,36 +230,36 @@ const CommunityPage: React.FC = () => {
        <div className="bg-amber-500 py-16 md:py-24 px-6 text-center">
           <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
             <span className="inline-block px-4 py-1.5 bg-black text-white text-[10px] font-black tracking-widest uppercase rounded-full mb-6">Access Granted: Member #3421</span>
-            <h1 className="text-6xl md:text-9xl font-syne font-black mb-6 uppercase tracking-tighter leading-none text-black">THE 54 STREET</h1>
-            <p className="text-lg md:text-2xl font-bold max-w-2xl mx-auto text-black/80">
+            <h1 className="text-4xl md:text-9xl font-syne font-black mb-4 md:mb-6 uppercase tracking-tighter leading-none text-black">THE 54 STREET</h1>
+            <p className="text-base md:text-2xl font-bold max-w-2xl mx-auto text-black/80">
                 Welcome to the inner circle. Where culture meets street, and the tribe shapes the future.
             </p>
           </div>
        </div>
 
-       <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-3 gap-12">
+       <div className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-16 grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
           {/* Main Feed */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-6 md:space-y-8 order-2 lg:order-1">
              <div className="flex items-center justify-between mb-2 border-b border-zinc-200 dark:border-zinc-800 pb-4">
-                <h2 className="text-3xl font-syne font-black uppercase">Community Feed</h2>
+                <h2 className="text-2xl md:text-3xl font-syne font-black uppercase">Community Feed</h2>
                 <div className="flex gap-2">
                     <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
-                    <span className="text-xs font-bold uppercase text-zinc-500 tracking-widest">Live Now</span>
+                    <span className="text-[10px] md:text-xs font-bold uppercase text-zinc-500 tracking-widest">Live Now</span>
                 </div>
              </div>
 
              {/* Create Post Input */}
-             <div className="bg-white dark:bg-zinc-900 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+             <div className="bg-white dark:bg-zinc-900 p-4 md:p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
                 <div className="flex gap-4">
-                    <div className="w-12 h-12 bg-zinc-200 dark:bg-zinc-800 rounded-full flex-shrink-0 overflow-hidden">
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-zinc-200 dark:bg-zinc-800 rounded-full flex-shrink-0 overflow-hidden">
                         <img src="https://i.pravatar.cc/150?img=12" alt="You" className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1 space-y-4">
                         <textarea 
                             value={newPostText}
                             onChange={(e) => setNewPostText(e.target.value)}
-                            placeholder="What's on your mind? Share your designs or ideas..." 
-                            className="w-full bg-transparent border-b-2 border-zinc-100 dark:border-zinc-800 focus:border-amber-500 outline-none p-2 text-lg font-medium resize-none transition-colors dark:text-white placeholder:text-zinc-500"
+                            placeholder="What's on your mind? Share your designs..." 
+                            className="w-full bg-transparent border-b-2 border-zinc-100 dark:border-zinc-800 focus:border-amber-500 outline-none p-2 text-base md:text-lg font-medium resize-none transition-colors dark:text-white placeholder:text-zinc-500"
                             rows={2}
                         />
                         <div className="flex justify-between items-center">
@@ -269,7 +269,7 @@ const CommunityPage: React.FC = () => {
                             <button 
                                 onClick={handleCreatePost}
                                 disabled={!newPostText.trim()}
-                                className="bg-black dark:bg-white text-white dark:text-black px-6 py-2 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-amber-500 hover:text-black dark:hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                className="bg-black dark:bg-white text-white dark:text-black px-4 md:px-6 py-2 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-amber-500 hover:text-black dark:hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                             >
                                 Post Update
                             </button>
@@ -292,12 +292,12 @@ const CommunityPage: React.FC = () => {
           </div>
 
           {/* Sidebar: Feedback & Ideas */}
-          <div className="space-y-8 lg:sticky lg:top-24 h-fit">
-             <div className="bg-black dark:bg-zinc-900 text-white p-8 rounded-[2rem] relative overflow-hidden border border-zinc-800">
+          <div className="space-y-8 lg:sticky lg:top-24 h-fit order-1 lg:order-2">
+             <div className="bg-black dark:bg-zinc-900 text-white p-6 md:p-8 rounded-[2rem] relative overflow-hidden border border-zinc-800">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/20 blur-3xl rounded-full -mr-16 -mt-16 pointer-events-none"></div>
                 <div className="relative z-10">
-                   <h3 className="text-3xl font-syne font-black mb-2 uppercase text-amber-500">The Council</h3>
-                   <p className="text-zinc-400 text-sm mb-8 font-medium leading-relaxed">
+                   <h3 className="text-2xl md:text-3xl font-syne font-black mb-2 uppercase text-amber-500">The Council</h3>
+                   <p className="text-zinc-400 text-xs md:text-sm mb-8 font-medium leading-relaxed">
                        You are now part of the decision making process. Rate your experience and drop ideas for the next collection.
                    </p>
                    
@@ -322,7 +322,7 @@ const CommunityPage: React.FC = () => {
                 </div>
              </div>
 
-             <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2rem] border border-zinc-200 dark:border-zinc-800">
+             <div className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-[2rem] border border-zinc-200 dark:border-zinc-800">
                 <h3 className="font-bold text-lg mb-6 uppercase flex items-center gap-2 tracking-wide text-zinc-900 dark:text-zinc-100">
                    <Star className="text-amber-500 fill-amber-500" size={20} />
                    Top Contributors
