@@ -2,6 +2,7 @@
   "name": "TRIBE DESIGNS - Custom African Jerseys",
   "description": "A high-energy, youth-focused platform for custom-made African jerseys, featuring an AI-powered design assistant and real-time customizer.",
   "requestFramePermissions": [
-    "camera"
+    "camera",
+    "geolocation"
   ]
 }

@@ -2,13 +2,15 @@
 import React, { useState } from 'react';
 import { PATTERNS, COLORS } from '../constants';
 import { useApp } from '../App';
-import { Save, Info, Check, Type } from 'lucide-react';
+import { Save, Info, Check, Type, Ruler } from 'lucide-react';
 
 const FONT_OPTIONS = [
   { id: 'syne', name: 'TRIBE BOLD', family: "'Syne', sans-serif", letterSpacing: '0.1em' },
   { id: 'poppins', name: 'ATHLETIC', family: "'Poppins', sans-serif", letterSpacing: '0.05em' },
   { id: 'space', name: 'STREET', family: "'Space Grotesk', sans-serif", letterSpacing: '0.05em' }
 ];
+
+const SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'];
 
 const CustomizerPage: React.FC = () => {
   const { addToCart } = useApp();
@@ -17,6 +19,7 @@ const CustomizerPage: React.FC = () => {
   const [selectedPattern, setSelectedPattern] = useState(PATTERNS[0]);
   const [selectedColor, setSelectedColor] = useState(COLORS[0]);
   const [selectedFont, setSelectedFont] = useState(FONT_OPTIONS[0]);
+  const [selectedSize, setSelectedSize] = useState('L');
   const [draftSaved, setDraftSaved] = useState(false);
 
   const handleSave = () => {
@@ -33,7 +36,8 @@ const CustomizerPage: React.FC = () => {
         number, 
         basePattern: selectedPattern.id, 
         accentColor: selectedColor.hex,
-        font: selectedFont.id 
+        font: selectedFont.id,
+        size: selectedSize
     });
   };
 
@@ -48,45 +52,116 @@ const CustomizerPage: React.FC = () => {
         {/* Preview Area */}
         <div className="flex-1 w-full">
           <div className="lg:sticky lg:top-32">
-            <div className="relative aspect-square w-full bg-zinc-100 dark:bg-zinc-900 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden border-4 border-zinc-200 dark:border-zinc-800 shadow-2xl flex items-center justify-center p-6 md:p-12">
-              {/* Fake Jersey SVG representation */}
-              <div className="relative w-full max-w-md h-full transition-all duration-500 group">
-                <svg viewBox="0 0 400 500" className="w-full h-full drop-shadow-2xl">
-                  {/* Jersey Body */}
+            <div className="relative aspect-square w-full bg-zinc-100 dark:bg-zinc-800 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden border-4 border-zinc-200 dark:border-zinc-700 shadow-2xl flex items-center justify-center p-6 md:p-12">
+               {/* Studio Background Effect */}
+               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-zinc-100 to-zinc-300 dark:from-zinc-800 dark:via-zinc-900 dark:to-black opacity-80" />
+              
+              {/* Jersey SVG representation */}
+              <div className="relative w-full max-w-lg h-full transition-all duration-500 group flex items-center justify-center z-10">
+                <svg viewBox="0 0 500 600" className="w-full h-full drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                  <defs>
+                    {/* Realistic Texture Pattern */}
+                    <pattern id="jerseyMesh" x="0" y="0" width="3" height="3" patternUnits="userSpaceOnUse">
+                        <circle cx="1.5" cy="1.5" r="0.5" fill="#000" fillOpacity="0.1" />
+                    </pattern>
+                    
+                    {/* Cloth Folds Gradient */}
+                    <linearGradient id="folds" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#000" stopOpacity="0.2" />
+                        <stop offset="20%" stopColor="#fff" stopOpacity="0.1" />
+                        <stop offset="50%" stopColor="#000" stopOpacity="0.05" />
+                        <stop offset="80%" stopColor="#fff" stopOpacity="0.1" />
+                        <stop offset="100%" stopColor="#000" stopOpacity="0.2" />
+                    </linearGradient>
+
+                    <clipPath id="jerseyShape">
+                       <path d="M 200 50 Q 250 80 300 50 L 450 100 L 410 230 L 350 200 L 350 550 L 150 550 L 150 200 L 90 230 L 50 100 L 200 50 Z" />
+                    </clipPath>
+                  </defs>
+
+                  {/* Jersey Body Base */}
                   <path 
-                    d="M100 100 L300 100 L350 200 L320 220 L280 180 L280 450 L120 450 L120 180 L80 220 L50 200 Z" 
+                    d="M 200 50 Q 250 80 300 50 L 450 100 L 410 230 L 350 200 L 350 550 L 150 550 L 150 200 L 90 230 L 50 100 L 200 50 Z" 
                     fill={selectedColor.hex}
                     className="transition-colors duration-500"
                   />
-                  {/* Pattern Overlay - simplified */}
-                  <rect x="120" y="100" width="160" height="350" fill="white" fillOpacity="0.1" />
                   
+                  {/* Pattern Overlay */}
+                  <rect 
+                    x="0" 
+                    y="0" 
+                    width="500" 
+                    height="600" 
+                    fill="transparent" 
+                    clipPath="url(#jerseyShape)" 
+                  >
+                     {/* Simplified pattern visual logic for SVG */}
+                     {selectedPattern.id !== 'minimal' && (
+                        <animate 
+                            attributeName="fill" 
+                            values="transparent" 
+                            dur="0s" 
+                            fill="freeze" 
+                        />
+                     )}
+                  </rect>
+                  {/* For specific patterns, we can use SVG patterns, but keeping it simple with color overlay for now or custom elements */}
+                  {selectedPattern.id !== 'minimal' && (
+                      <g clipPath="url(#jerseyShape)" className="opacity-10 mix-blend-multiply pointer-events-none">
+                          <rect x="0" y="0" width="500" height="600" fill={selectedPattern.color.replace('bg-', '') === 'amber-500' ? 'orange' : 'black'} />
+                          <path d="M0 0 L500 600 M500 0 L0 600" stroke="black" strokeWidth="5" />
+                          <path d="M250 0 L250 600 M0 300 L500 300" stroke="black" strokeWidth="5" />
+                      </g>
+                  )}
+
+                  {/* Texture & Folds Overlay */}
+                  <path 
+                    d="M 200 50 Q 250 80 300 50 L 450 100 L 410 230 L 350 200 L 350 550 L 150 550 L 150 200 L 90 230 L 50 100 L 200 50 Z" 
+                    fill="url(#jerseyMesh)"
+                    className="pointer-events-none"
+                  />
+                  <path 
+                    d="M 200 50 Q 250 80 300 50 L 450 100 L 410 230 L 350 200 L 350 550 L 150 550 L 150 200 L 90 230 L 50 100 L 200 50 Z" 
+                    fill="url(#folds)"
+                    className="pointer-events-none mix-blend-overlay"
+                  />
+
+                  {/* Collar Detail */}
+                  <path 
+                    d="M 200 50 Q 250 80 300 50" 
+                    fill="none" 
+                    stroke="rgba(0,0,0,0.2)" 
+                    strokeWidth="5"
+                  />
+
                   {/* Personalization */}
                   <text 
-                    x="200" y="160" 
+                    x="250" y="200" 
                     textAnchor="middle" 
                     dominantBaseline="middle"
                     fill="white" 
                     className="uppercase"
                     style={{ 
                         fontFamily: selectedFont.family,
-                        fontSize: '24px',
+                        fontSize: '36px',
                         fontWeight: 900,
-                        letterSpacing: selectedFont.letterSpacing
+                        letterSpacing: selectedFont.letterSpacing,
+                        filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.3))'
                     }}
                   >
                     {name || 'YOUR NAME'}
                   </text>
                   <text 
-                    x="200" y="310" 
+                    x="250" y="380" 
                     textAnchor="middle" 
                     dominantBaseline="middle"
                     fill="white" 
                     style={{ 
                         fontFamily: selectedFont.family,
-                        fontSize: '110px',
+                        fontSize: '160px',
                         fontWeight: 900,
-                        letterSpacing: '-0.05em'
+                        letterSpacing: '-0.05em',
+                        filter: 'drop-shadow(0px 4px 4px rgba(0,0,0,0.3))'
                     }}
                   >
                     {number || '00'}
@@ -129,6 +204,28 @@ const CustomizerPage: React.FC = () => {
                   onChange={(e) => setNumber(e.target.value)}
                   className="w-full bg-zinc-100 dark:bg-zinc-900 px-4 md:px-5 py-3 md:py-4 rounded-2xl font-bold focus:outline-none ring-2 ring-transparent focus:ring-amber-500 transition-all text-center text-sm md:text-base"
                 />
+              </div>
+            </div>
+
+            {/* Size Selection */}
+            <div>
+              <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-3 flex items-center gap-2">
+                <Ruler size={12} /> Select Size
+              </label>
+              <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+                {SIZES.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`flex-1 min-w-[3rem] py-3 md:py-3.5 rounded-xl border-2 transition-all font-black text-xs md:text-sm ${
+                      selectedSize === size
+                        ? 'border-amber-500 bg-amber-500 text-black'
+                        : 'border-zinc-100 dark:border-zinc-800 text-zinc-500 hover:border-zinc-300 dark:hover:border-zinc-700'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
               </div>
             </div>
 

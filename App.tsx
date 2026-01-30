@@ -6,16 +6,19 @@ import {
   Menu, 
   X, 
   Sun, 
-  Moon
+  Moon,
+  User,
+  Settings
 } from 'lucide-react';
-import { Theme, CartItem, Product } from './types';
+import { Theme, CartItem, Product, UserProfile } from './types';
 import LandingPage from './pages/LandingPage';
 import ShopPage from './pages/ShopPage';
 import CustomizerPage from './pages/CustomizerPage';
 import CartPage from './pages/CartPage';
 import CommunityPage from './pages/CommunityPage';
+import SettingsPage from './pages/SettingsPage';
 
-// Context for Cart and Theme
+// Context for Cart, Theme, and User
 interface AppContextType {
   theme: Theme;
   setTheme: (t: Theme) => void;
@@ -24,6 +27,8 @@ interface AppContextType {
   removeFromCart: (id: string) => void;
   toggleCart: () => void;
   isCartOpen: boolean;
+  user: UserProfile;
+  updateUser: (u: UserProfile) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -32,6 +37,19 @@ export const useApp = () => {
   const context = useContext(AppContext);
   if (!context) throw new Error("useApp must be used within AppProvider");
   return context;
+};
+
+const defaultUser: UserProfile = {
+  name: '',
+  email: '',
+  phone: '',
+  address: {
+    street: '',
+    city: '',
+    state: '',
+    zip: '',
+    country: 'India'
+  }
 };
 
 const App: React.FC = () => {
@@ -54,6 +72,15 @@ const App: React.FC = () => {
     } catch (error) {
       console.error("Failed to load cart from localStorage:", error);
       return [];
+    }
+  });
+
+  const [user, setUser] = useState<UserProfile>(() => {
+    try {
+      const savedUser = window.localStorage.getItem('tribe-designs-user');
+      return savedUser ? JSON.parse(savedUser) : defaultUser;
+    } catch {
+      return defaultUser;
     }
   });
 
@@ -80,6 +107,14 @@ const App: React.FC = () => {
     }
   }, [cart]);
 
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('tribe-designs-user', JSON.stringify(user));
+    } catch (error) {
+      console.error("Failed to save user to localStorage:", error);
+    }
+  }, [user]);
+
 
   const addToCart = (product: Product, customization?: any) => {
     setCart(prev => {
@@ -96,10 +131,14 @@ const App: React.FC = () => {
     setCart(prev => prev.filter(item => item.id !== id));
   };
 
+  const updateUser = (u: UserProfile) => {
+    setUser(u);
+  };
+
   const toggleCart = () => setIsCartOpen(!isCartOpen);
 
   return (
-    <AppContext.Provider value={{ theme, setTheme, cart, addToCart, removeFromCart, toggleCart, isCartOpen }}>
+    <AppContext.Provider value={{ theme, setTheme, cart, addToCart, removeFromCart, toggleCart, isCartOpen, user, updateUser }}>
       <HashRouter>
         <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 selection:bg-amber-400 selection:text-black transition-all duration-500 w-full">
           <Navbar />
@@ -110,6 +149,7 @@ const App: React.FC = () => {
               <Route path="/customize" element={<CustomizerPage />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/community" element={<CommunityPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </main>
           <Footer />
@@ -170,6 +210,13 @@ const Navbar = () => {
 
           {/* Actions */}
           <div className="flex items-center space-x-2 md:space-x-4">
+             <Link 
+              to="/settings"
+              className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors hidden md:block"
+              title="Settings & Profile"
+            >
+              <User size={18} />
+            </Link>
             <button 
               onClick={() => setTheme(theme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT)}
               className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
@@ -208,6 +255,13 @@ const Navbar = () => {
                 {link.name}
               </Link>
             ))}
+            <Link 
+                to="/settings"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block px-3 py-4 text-xl font-syne font-bold tracking-widest hover:text-amber-500 w-full text-center flex items-center justify-center gap-2"
+            >
+                SETTINGS <Settings size={18} />
+            </Link>
           </div>
         </div>
       )}
@@ -272,9 +326,9 @@ const CartSidebar = () => {
               <span>TOTAL</span>
               <span>${cart.reduce((acc, i) => acc + (i.price * i.quantity), 0)}</span>
             </div>
-            <button className="w-full bg-amber-500 hover:bg-amber-600 text-black font-extrabold py-4 rounded-xl transition-all transform active:scale-95">
+            <Link to="/cart" onClick={toggleCart} className="w-full bg-amber-500 hover:bg-amber-600 text-black font-extrabold py-4 rounded-xl transition-all transform active:scale-95 block text-center">
               CHECKOUT NOW
-            </button>
+            </Link>
           </div>
         </div>
       </div>
