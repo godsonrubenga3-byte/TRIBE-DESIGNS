@@ -161,18 +161,125 @@ const App: React.FC = () => {
 };
 
 const LogoIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-        <path d="M12 2C6.477 2 2 6.477 2 12C2 17.523 6.477 22 12 22C17.523 22 22 17.523 22 12C22 6.477 17.523 2 12 2Z" className="fill-[#F0EBE3] dark:fill-zinc-800" />
-        <path d="M12 3C16.971 3 21 7.029 21 12C21 16.971 16.971 21 12 21C7.029 21 3 16.971 3 12C3 7.029 7.029 3 12 3Z" stroke="#595047" strokeWidth="1" className="dark:stroke-zinc-500" />
-        <text x="12" y="13.5" textAnchor="middle" dominantBaseline="middle" className="font-syne font-bold fill-[#595047] dark:fill-zinc-400" style={{ fontSize: '9px' }}>
-            T
+    <svg viewBox="0 0 300 350" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        {/* Shield Outer Outline */}
+        <path 
+            d="M150 25 L275 75 V140 C275 240 150 325 150 325 C150 325 25 240 25 140 V75 L150 25 Z" 
+            stroke="currentColor" 
+            strokeWidth="10" 
+            fill="none" 
+            strokeLinejoin="round"
+        />
+        
+        {/* Banner Background Eraser (Matches Theme BG) */}
+        <rect x="15" y="128" width="270" height="54" className="fill-white dark:fill-zinc-950" />
+
+        {/* Shield Inner Outline - Top Part */}
+        <path 
+            d="M150 55 L250 95 V128" 
+            stroke="currentColor" 
+            strokeWidth="5" 
+            fill="none"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+        />
+         <path 
+            d="M150 55 L50 95 V128" 
+            stroke="currentColor" 
+            strokeWidth="5" 
+            fill="none"
+            strokeLinejoin="round"
+             strokeLinecap="round"
+        />
+
+        {/* Shield Inner Outline - Bottom Part */}
+        <path 
+            d="M250 182 V140 C250 220 150 295 150 295" 
+            stroke="currentColor" 
+            strokeWidth="5" 
+            fill="none"
+             strokeLinejoin="round"
+             strokeLinecap="round"
+        />
+        <path 
+            d="M50 182 V140 C50 220 150 295 150 295" 
+            stroke="currentColor" 
+            strokeWidth="5" 
+            fill="none"
+             strokeLinejoin="round"
+             strokeLinecap="round"
+        />
+
+        {/* Banner Box */}
+        <rect x="25" y="130" width="250" height="50" stroke="currentColor" strokeWidth="8" fill="none" />
+        
+        {/* Brand Name */}
+        <text 
+            x="150" 
+            y="166" 
+            textAnchor="middle" 
+            fill="currentColor"
+            style={{ 
+                fontFamily: "'Syne', sans-serif", 
+                fontWeight: 800, 
+                fontSize: '28px', 
+                letterSpacing: '0px' 
+            }}
+        >
+            TRIBE•DESIGNS
         </text>
+
+        {/* Number 54 */}
+        <text 
+            x="150" 
+            y="235" 
+            textAnchor="middle" 
+            fill="currentColor"
+            style={{ 
+                fontFamily: "serif", 
+                fontWeight: 'bold', 
+                fontSize: '56px'
+            }}
+        >
+            54
+        </text>
+            
+        {/* Smile Curve */}
+        <path d="M115 255 Q150 285 185 255" stroke="currentColor" strokeWidth="6" strokeLinecap="round" fill="none" />
+            
+        {/* Stars (Straight Line) */}
+        <g fill="currentColor" transform="translate(0, 10)">
+             <path d="M125 275 L128 283 L137 283 L130 289 L133 297 L125 292 L117 297 L120 289 L113 283 L122 283 Z" />
+             <path d="M150 275 L153 283 L162 283 L155 289 L158 297 L150 292 L142 297 L145 289 L138 283 L147 283 Z" />
+             <path d="M175 275 L178 283 L187 283 L180 289 L183 297 L175 292 L167 297 L170 289 L163 283 L172 283 Z" />
+        </g>
     </svg>
 );
+
+const LogoModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+    if (!isOpen) return null;
+    return (
+        <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-white/95 dark:bg-black/95 backdrop-blur-xl animate-in fade-in duration-300 p-8" 
+            onClick={onClose}
+        >
+            <button className="absolute top-8 right-8 text-zinc-500 hover:text-black dark:hover:text-white transition-colors" onClick={onClose}>
+                <X size={32} />
+            </button>
+            <div 
+                className="relative w-full max-w-lg aspect-square flex items-center justify-center animate-in zoom-in-50 duration-500" 
+                onClick={e => e.stopPropagation()}
+            >
+                <LogoIcon className="w-full h-full drop-shadow-2xl text-black dark:text-white" />
+            </div>
+        </div>
+    );
+};
 
 const Navbar = () => {
   const { theme, setTheme, cart, toggleCart } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
   const location = useLocation();
 
   const navLinks = [
@@ -182,18 +289,26 @@ const Navbar = () => {
   ];
 
   return (
+    <>
+    <LogoModal isOpen={isLogoModalOpen} onClose={() => setIsLogoModalOpen(false)} />
     <nav className="fixed top-0 z-50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 transition-all duration-500 left-0 right-0 w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full transition-transform group-hover:rotate-180 duration-500">
-              <LogoIcon className="w-full h-full" />
-            </div>
-            <span className="font-poppins font-semibold text-lg md:text-xl tracking-wide text-zinc-800 dark:text-zinc-200">
-              TRIBE<span className="text-amber-500 font-bold mx-0.5">•</span>DESIGNS
-            </span>
-          </Link>
+          {/* Logo Area */}
+          <div className="flex items-center space-x-2 md:space-x-3 group">
+            <button 
+                onClick={() => setIsLogoModalOpen(true)}
+                className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center transition-transform hover:scale-105 duration-500 focus:outline-none"
+                title="View Logo"
+            >
+              <LogoIcon className="w-full h-full text-black dark:text-white" />
+            </button>
+            <Link to="/" className="font-poppins group hidden sm:block">
+               <span className="font-semibold text-lg md:text-xl tracking-wide text-zinc-800 dark:text-zinc-200 group-hover:text-amber-500 transition-colors">
+                  TRIBE<span className="text-amber-500 font-bold mx-0.5">•</span>DESIGNS
+               </span>
+            </Link>
+          </div>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
@@ -266,6 +381,7 @@ const Navbar = () => {
         </div>
       )}
     </nav>
+    </>
   );
 };
 
@@ -341,7 +457,9 @@ const Footer = () => (
     <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
       <div className="col-span-1 md:col-span-2">
         <div className="flex items-center space-x-4 mb-6">
-          <LogoIcon className="w-12 h-12 md:w-16 md:h-16" />
+          <div className="w-16 h-16">
+            <LogoIcon className="w-full h-full text-black dark:text-white" />
+          </div>
           <div className="font-poppins">
             <h3 className="font-semibold text-xl md:text-2xl tracking-wider text-zinc-800 dark:text-zinc-200">TRIBE•DESIGNS</h3>
             <p className="text-lg md:text-xl font-medium text-zinc-600 dark:text-zinc-400">.54.</p>
