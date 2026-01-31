@@ -1,15 +1,17 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Zap, Globe, Palette, Sparkles, ArrowRight } from 'lucide-react';
+import { useApp } from '../App';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isCommunityMember, joinCommunity } = useApp();
   const [email, setEmail] = useState('');
 
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
+      joinCommunity(email);
       navigate('/community');
     }
   };
@@ -127,33 +129,49 @@ const LandingPage: React.FC = () => {
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto">
-            <h2 className="text-4xl md:text-8xl font-syne font-black mb-6 md:mb-8 uppercase italic tracking-tighter">
-                JOIN THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">TRIBE.</span>
-            </h2>
-            <p className="text-zinc-400 max-w-lg mx-auto mb-10 md:mb-12 text-base md:text-lg font-medium leading-relaxed">
-            Be the first to know about secret drops, custom collaboration opportunities, and join the conversation at 54 Street.
-            </p>
-            
-            <form onSubmit={handleJoin} className="max-w-xl mx-auto relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-amber-500 rounded-2xl blur opacity-40 group-hover:opacity-100 transition duration-500 group-hover:duration-200"></div>
-                <div className="relative flex flex-col sm:flex-row p-2 bg-black rounded-2xl border border-zinc-800 shadow-2xl gap-2">
-                    <input 
-                        type="email" 
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="ENTER YOUR EMAIL" 
-                        className="flex-1 bg-transparent px-6 py-4 focus:outline-none text-white font-bold uppercase placeholder:text-zinc-600 tracking-widest text-center sm:text-left"
-                        required
-                    />
-                    <button type="submit" className="bg-amber-500 text-black px-8 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-white transition-colors shadow-lg flex items-center justify-center gap-2">
-                        JOIN <ArrowRight size={18} />
-                    </button>
+            {isCommunityMember ? (
+                <div className="animate-in fade-in zoom-in duration-500">
+                    <h2 className="text-4xl md:text-8xl font-syne font-black mb-6 md:mb-8 uppercase italic tracking-tighter">
+                        WELCOME BACK <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">FAM.</span>
+                    </h2>
+                    <p className="text-zinc-400 max-w-lg mx-auto mb-10 md:mb-12 text-base md:text-lg font-medium leading-relaxed">
+                        The Council is waiting for you. Check out the latest drops and community designs at 54 Street.
+                    </p>
+                    <Link to="/community" className="inline-flex items-center gap-3 px-10 py-5 bg-amber-500 text-black font-black uppercase tracking-widest hover:bg-white transition-all rounded-xl shadow-lg transform hover:scale-105">
+                        ENTER 54 STREET <ArrowRight size={20} />
+                    </Link>
                 </div>
-            </form>
-            
-            <p className="mt-8 text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em]">
-                Join 15,000+ members worldwide
-            </p>
+            ) : (
+                <>
+                    <h2 className="text-4xl md:text-8xl font-syne font-black mb-6 md:mb-8 uppercase italic tracking-tighter">
+                        JOIN THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">TRIBE.</span>
+                    </h2>
+                    <p className="text-zinc-400 max-w-lg mx-auto mb-10 md:mb-12 text-base md:text-lg font-medium leading-relaxed">
+                    Be the first to know about secret drops, custom collaboration opportunities, and join the conversation at 54 Street.
+                    </p>
+                    
+                    <form onSubmit={handleJoin} className="max-w-xl mx-auto relative group">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-amber-500 rounded-2xl blur opacity-40 group-hover:opacity-100 transition duration-500 group-hover:duration-200"></div>
+                        <div className="relative flex flex-col sm:flex-row p-2 bg-black rounded-2xl border border-zinc-800 shadow-2xl gap-2">
+                            <input 
+                                type="email" 
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="ENTER YOUR EMAIL" 
+                                className="flex-1 bg-transparent px-6 py-4 focus:outline-none text-white font-bold uppercase placeholder:text-zinc-600 tracking-widest text-center sm:text-left"
+                                required
+                            />
+                            <button type="submit" className="bg-amber-500 text-black px-8 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-white transition-colors shadow-lg flex items-center justify-center gap-2">
+                                JOIN <ArrowRight size={18} />
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <p className="mt-8 text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em]">
+                        Join 15,000+ members worldwide
+                    </p>
+                </>
+            )}
         </div>
       </section>
     </div>

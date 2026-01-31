@@ -1,20 +1,25 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
 
-# Run and deploy your AI Studio app
+# 🌍 TRIBE DESIGNS - Launch Guide
 
-This contains everything you need to run your app locally.
+This project uses React, TypeScript, and Tailwind CSS. Because it uses ES6 modules and `.tsx` files, it must be served from a local web server (it cannot be opened by simply double-clicking the `index.html` file).
 
-View your app in AI Studio: https://ai.studio/apps/drive/1KClUrMJvfxgyR3cFDijvkWsYDruPnJac
+## 🚀 How to Launch
 
-## Run Locally
+### Option 1: Using Node.js (Recommended)
+If you have [Node.js](https://nodejs.org/) installed:
+1. Open your terminal or command prompt in this project folder.
+2. Run `npm install` to set up the development server.
+3. Run `npm start`.
+4. Open the link shown in the terminal (usually `http://localhost:5173`).
 
-**Prerequisites:**  Node.js
+### Option 2: Using VS Code (Easiest)
+If you use Visual Studio Code:
+1. Open this folder in VS Code.
+2. Install the **"Live Server"** or **"Live Preview"** extension.
+3. Right-click `index.html` and select **"Open with Live Server"**.
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🛠 Features
+- **Design Lab**: Custom jersey engine with fabric movement.
+- **54 STREET**: Persistent community login.
+- **AI Designer**: Cultural design advice via Gemini API.
+- **India Localization**: Default shipping and phone (+91) settings.

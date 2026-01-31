@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../App';
 import { Save, MapPin, User, CheckCircle2, LocateFixed, Loader2 } from 'lucide-react';
@@ -10,13 +9,19 @@ const SettingsPage: React.FC = () => {
   const [isLocating, setIsLocating] = useState(false);
 
   useEffect(() => {
+    let updatedData = { ...user };
+    
     // Ensure India is set if not already
-    if (user.address.country !== 'India') {
-      const updatedUser = { ...user, address: { ...user.address, country: 'India' } };
-      setFormData(updatedUser);
-    } else {
-      setFormData(user);
+    if (updatedData.address.country !== 'India') {
+      updatedData.address = { ...updatedData.address, country: 'India' };
     }
+
+    // Default to Indian prefix if phone is empty
+    if (!updatedData.phone) {
+        updatedData.phone = '+91 ';
+    }
+
+    setFormData(updatedData);
   }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,7 +124,7 @@ const SettingsPage: React.FC = () => {
                             value={formData.phone}
                             onChange={handleChange}
                             className="w-full bg-zinc-100 dark:bg-zinc-900 border-none rounded-xl px-4 py-3 font-medium focus:ring-2 focus:ring-amber-500 outline-none"
-                            placeholder="+233 55 123 4567"
+                            placeholder="+91 98765 43210"
                         />
                     </div>
                 </div>

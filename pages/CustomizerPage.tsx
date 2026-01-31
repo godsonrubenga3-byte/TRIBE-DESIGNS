@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PATTERNS, COLORS } from '../constants';
 import { useApp } from '../App';
@@ -48,6 +47,15 @@ const CustomizerPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 md:py-16">
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(0); }
+          50% { transform: translateY(-10px) rotate(1deg); }
+        }
+        .jersey-float {
+          animation: float 4s ease-in-out infinite;
+        }
+      `}</style>
       <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
         {/* Preview Area */}
         <div className="flex-1 w-full">
@@ -57,7 +65,7 @@ const CustomizerPage: React.FC = () => {
                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-zinc-100 to-zinc-300 dark:from-zinc-800 dark:via-zinc-900 dark:to-black opacity-80" />
               
               {/* Jersey SVG representation */}
-              <div className="relative w-full max-w-lg h-full transition-all duration-500 group flex items-center justify-center z-10">
+              <div className="relative w-full max-w-lg h-full transition-all duration-500 group flex items-center justify-center z-10 jersey-float">
                 <svg viewBox="0 0 500 600" className="w-full h-full drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                   <defs>
                     {/* Realistic Texture Pattern */}
@@ -65,6 +73,14 @@ const CustomizerPage: React.FC = () => {
                         <circle cx="1.5" cy="1.5" r="0.5" fill="#000" fillOpacity="0.1" />
                     </pattern>
                     
+                    {/* Fabric Movement Filter */}
+                    <filter id="windRipple" x="-20%" y="-20%" width="140%" height="140%">
+                      <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="3" seed="5" result="noise">
+                        <animate attributeName="baseFrequency" values="0.012;0.015;0.012" dur="5s" repeatCount="indefinite" />
+                      </feTurbulence>
+                      <feDisplacementMap in="SourceGraphic" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G" />
+                    </filter>
+
                     {/* Cloth Folds Gradient */}
                     <linearGradient id="folds" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor="#000" stopOpacity="0.2" />
@@ -79,100 +95,93 @@ const CustomizerPage: React.FC = () => {
                     </clipPath>
                   </defs>
 
-                  {/* Jersey Body Base */}
-                  <path 
-                    d="M 200 50 Q 250 80 300 50 L 450 100 L 410 230 L 350 200 L 350 550 L 150 550 L 150 200 L 90 230 L 50 100 L 200 50 Z" 
-                    fill={selectedColor.hex}
-                    className="transition-colors duration-500"
-                  />
-                  
-                  {/* Pattern Overlay */}
-                  <rect 
-                    x="0" 
-                    y="0" 
-                    width="500" 
-                    height="600" 
-                    fill="transparent" 
-                    clipPath="url(#jerseyShape)" 
-                  >
-                     {/* Simplified pattern visual logic for SVG */}
-                     {selectedPattern.id !== 'minimal' && (
-                        <animate 
-                            attributeName="fill" 
-                            values="transparent" 
-                            dur="0s" 
-                            fill="freeze" 
-                        />
-                     )}
-                  </rect>
-                  {/* For specific patterns, we can use SVG patterns, but keeping it simple with color overlay for now or custom elements */}
-                  {selectedPattern.id !== 'minimal' && (
-                      <g clipPath="url(#jerseyShape)" className="opacity-10 mix-blend-multiply pointer-events-none">
-                          <rect x="0" y="0" width="500" height="600" fill={selectedPattern.color.replace('bg-', '') === 'amber-500' ? 'orange' : 'black'} />
-                          <path d="M0 0 L500 600 M500 0 L0 600" stroke="black" strokeWidth="5" />
-                          <path d="M250 0 L250 600 M0 300 L500 300" stroke="black" strokeWidth="5" />
-                      </g>
-                  )}
+                  {/* Apply windRipple filter to the entire jersey group */}
+                  <g filter="url(#windRipple)">
+                    {/* Jersey Body Base */}
+                    <path 
+                      d="M 200 50 Q 250 80 300 50 L 450 100 L 410 230 L 350 200 L 350 550 L 150 550 L 150 200 L 90 230 L 50 100 L 200 50 Z" 
+                      fill={selectedColor.hex}
+                      className="transition-colors duration-500"
+                    />
+                    
+                    {/* Pattern Overlay */}
+                    <rect 
+                      x="0" 
+                      y="0" 
+                      width="500" 
+                      height="600" 
+                      fill="transparent" 
+                      clipPath="url(#jerseyShape)" 
+                    />
+                    
+                    {selectedPattern.id !== 'minimal' && (
+                        <g clipPath="url(#jerseyShape)" className="opacity-10 mix-blend-multiply pointer-events-none">
+                            <rect x="0" y="0" width="500" height="600" fill={selectedPattern.color.replace('bg-', '') === 'amber-500' ? 'orange' : 'black'} />
+                            <path d="M0 0 L500 600 M500 0 L0 600" stroke="black" strokeWidth="5" />
+                            <path d="M250 0 L250 600 M0 300 L500 300" stroke="black" strokeWidth="5" />
+                        </g>
+                    )}
 
-                  {/* Texture & Folds Overlay */}
-                  <path 
-                    d="M 200 50 Q 250 80 300 50 L 450 100 L 410 230 L 350 200 L 350 550 L 150 550 L 150 200 L 90 230 L 50 100 L 200 50 Z" 
-                    fill="url(#jerseyMesh)"
-                    className="pointer-events-none"
-                  />
-                  <path 
-                    d="M 200 50 Q 250 80 300 50 L 450 100 L 410 230 L 350 200 L 350 550 L 150 550 L 150 200 L 90 230 L 50 100 L 200 50 Z" 
-                    fill="url(#folds)"
-                    className="pointer-events-none mix-blend-overlay"
-                  />
+                    {/* Texture & Folds Overlay */}
+                    <path 
+                      d="M 200 50 Q 250 80 300 50 L 450 100 L 410 230 L 350 200 L 350 550 L 150 550 L 150 200 L 90 230 L 50 100 L 200 50 Z" 
+                      fill="url(#jerseyMesh)"
+                      className="pointer-events-none"
+                    />
+                    <path 
+                      d="M 200 50 Q 250 80 300 50 L 450 100 L 410 230 L 350 200 L 350 550 L 150 550 L 150 200 L 90 230 L 50 100 L 200 50 Z" 
+                      fill="url(#folds)"
+                      className="pointer-events-none mix-blend-overlay"
+                    />
 
-                  {/* Collar Detail */}
-                  <path 
-                    d="M 200 50 Q 250 80 300 50" 
-                    fill="none" 
-                    stroke="rgba(0,0,0,0.2)" 
-                    strokeWidth="5"
-                  />
+                    {/* Collar Detail */}
+                    <path 
+                      d="M 200 50 Q 250 80 300 50" 
+                      fill="none" 
+                      stroke="rgba(0,0,0,0.2)" 
+                      strokeWidth="5"
+                    />
 
-                  {/* Personalization */}
-                  <text 
-                    x="250" y="200" 
-                    textAnchor="middle" 
-                    dominantBaseline="middle"
-                    fill="white" 
-                    className="uppercase"
-                    style={{ 
-                        fontFamily: selectedFont.family,
-                        fontSize: '36px',
-                        fontWeight: 900,
-                        letterSpacing: selectedFont.letterSpacing,
-                        filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.3))'
-                    }}
-                  >
-                    {name || 'YOUR NAME'}
-                  </text>
-                  <text 
-                    x="250" y="380" 
-                    textAnchor="middle" 
-                    dominantBaseline="middle"
-                    fill="white" 
-                    style={{ 
-                        fontFamily: selectedFont.family,
-                        fontSize: '160px',
-                        fontWeight: 900,
-                        letterSpacing: '-0.05em',
-                        filter: 'drop-shadow(0px 4px 4px rgba(0,0,0,0.3))'
-                    }}
-                  >
-                    {number || '00'}
-                  </text>
+                    {/* Personalization */}
+                    <text 
+                      x="250" y="200" 
+                      textAnchor="middle" 
+                      dominantBaseline="middle"
+                      fill="white" 
+                      className="uppercase"
+                      style={{ 
+                          fontFamily: selectedFont.family,
+                          fontSize: '36px',
+                          fontWeight: 900,
+                          letterSpacing: selectedFont.letterSpacing,
+                          filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.3))'
+                      }}
+                    >
+                      {name || 'YOUR NAME'}
+                    </text>
+                    <text 
+                      x="250" y="380" 
+                      textAnchor="middle" 
+                      dominantBaseline="middle"
+                      fill="white" 
+                      style={{ 
+                          fontFamily: selectedFont.family,
+                          fontSize: '160px',
+                          fontWeight: 900,
+                          letterSpacing: '-0.05em',
+                          filter: 'drop-shadow(0px 4px 4px rgba(0,0,0,0.3))'
+                      }}
+                    >
+                      {number || '00'}
+                    </text>
+                  </g>
                 </svg>
               </div>
             </div>
             
             <div className="mt-4 md:mt-8 flex items-center gap-4 text-zinc-500 justify-center lg:justify-start">
               <Info size={16} />
-              <p className="text-[10px] md:text-xs font-medium uppercase tracking-widest">3D Real-time visualization powered by TribeEngine™</p>
+              <p className="text-[10px] md:text-xs font-medium uppercase tracking-widest">Dynamic Fabric Engine Active: Simulating Real-time Flow</p>
             </div>
           </div>
         </div>

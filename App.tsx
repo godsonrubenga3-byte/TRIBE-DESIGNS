@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
@@ -18,7 +17,7 @@ import CartPage from './pages/CartPage';
 import CommunityPage from './pages/CommunityPage';
 import SettingsPage from './pages/SettingsPage';
 
-// Context for Cart, Theme, and User
+// Context for Cart, Theme, User, and Community Status
 interface AppContextType {
   theme: Theme;
   setTheme: (t: Theme) => void;
@@ -29,6 +28,8 @@ interface AppContextType {
   isCartOpen: boolean;
   user: UserProfile;
   updateUser: (u: UserProfile) => void;
+  isCommunityMember: boolean;
+  joinCommunity: (email: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -84,6 +85,14 @@ const App: React.FC = () => {
     }
   });
 
+  const [isCommunityMember, setIsCommunityMember] = useState<boolean>(() => {
+    try {
+        return window.localStorage.getItem('tribe-designs-member') === 'true';
+    } catch {
+        return false;
+    }
+  });
+
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
@@ -115,7 +124,6 @@ const App: React.FC = () => {
     }
   }, [user]);
 
-
   const addToCart = (product: Product, customization?: any) => {
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id && JSON.stringify(item.customization) === JSON.stringify(customization));
@@ -135,10 +143,22 @@ const App: React.FC = () => {
     setUser(u);
   };
 
+  const joinCommunity = (email: string) => {
+    setIsCommunityMember(true);
+    window.localStorage.setItem('tribe-designs-member', 'true');
+    // Also update user profile email if it's currently empty
+    setUser(prev => {
+        if (!prev.email) {
+            return { ...prev, email };
+        }
+        return prev;
+    });
+  };
+
   const toggleCart = () => setIsCartOpen(!isCartOpen);
 
   return (
-    <AppContext.Provider value={{ theme, setTheme, cart, addToCart, removeFromCart, toggleCart, isCartOpen, user, updateUser }}>
+    <AppContext.Provider value={{ theme, setTheme, cart, addToCart, removeFromCart, toggleCart, isCartOpen, user, updateUser, isCommunityMember, joinCommunity }}>
       <HashRouter>
         <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 selection:bg-amber-400 selection:text-black transition-all duration-500 w-full">
           <Navbar />
@@ -160,101 +180,18 @@ const App: React.FC = () => {
   );
 };
 
-const LogoIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 300 350" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-        {/* Shield Outer Outline */}
-        <path 
-            d="M150 25 L275 75 V140 C275 240 150 325 150 325 C150 325 25 240 25 140 V75 L150 25 Z" 
-            stroke="currentColor" 
-            strokeWidth="10" 
-            fill="none" 
-            strokeLinejoin="round"
+const LogoIcon = ({ className, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => {
+    const { theme } = useApp();
+    return (
+        <img 
+            src={theme === Theme.DARK ? './dark.png' : './light.png'} 
+            alt="TRIBE DESIGNS" 
+            loading="eager"
+            className={`object-contain block ${className || ''}`}
+            {...props}
         />
-        
-        {/* Banner Background Eraser (Matches Theme BG) */}
-        <rect x="15" y="128" width="270" height="54" className="fill-white dark:fill-zinc-950" />
-
-        {/* Shield Inner Outline - Top Part */}
-        <path 
-            d="M150 55 L250 95 V128" 
-            stroke="currentColor" 
-            strokeWidth="5" 
-            fill="none"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-        />
-         <path 
-            d="M150 55 L50 95 V128" 
-            stroke="currentColor" 
-            strokeWidth="5" 
-            fill="none"
-            strokeLinejoin="round"
-             strokeLinecap="round"
-        />
-
-        {/* Shield Inner Outline - Bottom Part */}
-        <path 
-            d="M250 182 V140 C250 220 150 295 150 295" 
-            stroke="currentColor" 
-            strokeWidth="5" 
-            fill="none"
-             strokeLinejoin="round"
-             strokeLinecap="round"
-        />
-        <path 
-            d="M50 182 V140 C50 220 150 295 150 295" 
-            stroke="currentColor" 
-            strokeWidth="5" 
-            fill="none"
-             strokeLinejoin="round"
-             strokeLinecap="round"
-        />
-
-        {/* Banner Box */}
-        <rect x="25" y="130" width="250" height="50" stroke="currentColor" strokeWidth="8" fill="none" />
-        
-        {/* Brand Name */}
-        <text 
-            x="150" 
-            y="166" 
-            textAnchor="middle" 
-            fill="currentColor"
-            style={{ 
-                fontFamily: "'Syne', sans-serif", 
-                fontWeight: 800, 
-                fontSize: '28px', 
-                letterSpacing: '0px' 
-            }}
-        >
-            TRIBE•DESIGNS
-        </text>
-
-        {/* Number 54 */}
-        <text 
-            x="150" 
-            y="235" 
-            textAnchor="middle" 
-            fill="currentColor"
-            style={{ 
-                fontFamily: "serif", 
-                fontWeight: 'bold', 
-                fontSize: '56px'
-            }}
-        >
-            54
-        </text>
-            
-        {/* Smile Curve */}
-        <path d="M115 255 Q150 285 185 255" stroke="currentColor" strokeWidth="6" strokeLinecap="round" fill="none" />
-            
-        {/* Stars (Straight Line) */}
-        <g fill="currentColor" transform="translate(0, 10)">
-             <path d="M125 275 L128 283 L137 283 L130 289 L133 297 L125 292 L117 297 L120 289 L113 283 L122 283 Z" />
-             <path d="M150 275 L153 283 L162 283 L155 289 L158 297 L150 292 L142 297 L145 289 L138 283 L147 283 Z" />
-             <path d="M175 275 L178 283 L187 283 L180 289 L183 297 L175 292 L167 297 L170 289 L163 283 L172 283 Z" />
-        </g>
-    </svg>
-);
+    );
+};
 
 const LogoModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     if (!isOpen) return null;
@@ -270,14 +207,14 @@ const LogoModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                 className="relative w-full max-w-lg aspect-square flex items-center justify-center animate-in zoom-in-50 duration-500" 
                 onClick={e => e.stopPropagation()}
             >
-                <LogoIcon className="w-full h-full drop-shadow-2xl text-black dark:text-white" />
+                <LogoIcon className="w-full h-full drop-shadow-2xl" />
             </div>
         </div>
     );
 };
 
 const Navbar = () => {
-  const { theme, setTheme, cart, toggleCart } = useApp();
+  const { theme, setTheme, cart, toggleCart, isCommunityMember } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
   const location = useLocation();
@@ -287,6 +224,10 @@ const Navbar = () => {
     { name: 'CUSTOMIZE', path: '/customize' },
     { name: 'THE VIBE', path: '/' },
   ];
+
+  if (isCommunityMember) {
+      navLinks.push({ name: '54 STREET', path: '/community' });
+  }
 
   return (
     <>
@@ -298,10 +239,10 @@ const Navbar = () => {
           <div className="flex items-center space-x-2 md:space-x-3 group">
             <button 
                 onClick={() => setIsLogoModalOpen(true)}
-                className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center transition-transform hover:scale-105 duration-500 focus:outline-none"
-                title="View Logo"
+                className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center transition-transform hover:scale-110 duration-500 focus:outline-none bg-transparent"
+                title="View Logo Large"
             >
-              <LogoIcon className="w-full h-full text-black dark:text-white" />
+              <LogoIcon className="w-full h-full" />
             </button>
             <Link to="/" className="font-poppins group hidden sm:block">
                <span className="font-semibold text-lg md:text-xl tracking-wide text-zinc-800 dark:text-zinc-200 group-hover:text-amber-500 transition-colors">
@@ -335,16 +276,18 @@ const Navbar = () => {
             <button 
               onClick={() => setTheme(theme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT)}
               className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              title="Toggle Dark Mode"
             >
               {theme === Theme.LIGHT ? <Moon size={18} /> : <Sun size={18} />}
             </button>
             <button 
               onClick={toggleCart}
               className="relative p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              title="View Cart"
             >
               <ShoppingBag size={18} />
               {cart.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-amber-500 text-black text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-amber-500 text-black text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bounce">
                   {cart.reduce((acc, i) => acc + i.quantity, 0)}
                 </span>
               )}
@@ -397,7 +340,7 @@ const CartSidebar = () => {
       <div className={`fixed right-0 top-0 h-full w-full max-w-sm bg-white dark:bg-zinc-900 z-[70] transition-transform duration-500 transform ${isCartOpen ? 'translate-x-0' : 'translate-x-full'} shadow-2xl`}>
         <div className="p-6 h-full flex flex-col">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-syne font-bold">YOUR BAG</h2>
+            <h2 className="text-2xl font-syne font-bold uppercase">YOUR BAG</h2>
             <button onClick={toggleCart} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full">
               <X size={24} />
             </button>
@@ -407,7 +350,7 @@ const CartSidebar = () => {
             {cart.length === 0 ? (
               <div className="text-center py-20 opacity-50">
                 <ShoppingBag size={48} className="mx-auto mb-4" />
-                <p>BAG IS EMPTY</p>
+                <p className="font-bold tracking-widest">BAG IS EMPTY</p>
               </div>
             ) : (
               <div className="space-y-6">
@@ -415,17 +358,17 @@ const CartSidebar = () => {
                   <div key={idx} className="flex space-x-4 group">
                     <img src={item.image} className="w-20 h-24 object-cover rounded-lg" alt={item.name} />
                     <div className="flex-1">
-                      <h3 className="font-bold text-sm">{item.name}</h3>
+                      <h3 className="font-bold text-sm uppercase">{item.name}</h3>
                       {item.customization && (
-                        <p className="text-[10px] text-zinc-500 uppercase mt-1">
+                        <p className="text-[10px] text-zinc-500 uppercase mt-1 font-medium">
                           Name: {item.customization.name} | No: {item.customization.number}
                         </p>
                       )}
                       <div className="flex justify-between items-center mt-2">
-                        <span className="font-bold text-amber-500">${item.price}</span>
+                        <span className="font-black text-amber-500">${item.price}</span>
                         <button 
                           onClick={() => removeFromCart(item.id)}
-                          className="text-xs text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="text-xs font-bold text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           REMOVE
                         </button>
@@ -438,11 +381,11 @@ const CartSidebar = () => {
           </div>
 
           <div className="border-t border-zinc-200 dark:border-zinc-800 pt-6 mt-6">
-            <div className="flex justify-between text-xl font-bold mb-6">
-              <span>TOTAL</span>
+            <div className="flex justify-between text-xl font-black mb-6">
+              <span className="uppercase">TOTAL</span>
               <span>${cart.reduce((acc, i) => acc + (i.price * i.quantity), 0)}</span>
             </div>
-            <Link to="/cart" onClick={toggleCart} className="w-full bg-amber-500 hover:bg-amber-600 text-black font-extrabold py-4 rounded-xl transition-all transform active:scale-95 block text-center">
+            <Link to="/cart" onClick={toggleCart} className="w-full bg-amber-500 hover:bg-amber-600 text-black font-extrabold py-4 rounded-xl transition-all transform active:scale-95 block text-center uppercase tracking-widest shadow-lg">
               CHECKOUT NOW
             </Link>
           </div>
@@ -458,45 +401,45 @@ const Footer = () => (
       <div className="col-span-1 md:col-span-2">
         <div className="flex items-center space-x-4 mb-6">
           <div className="w-16 h-16">
-            <LogoIcon className="w-full h-full text-black dark:text-white" />
+            <LogoIcon className="w-full h-full" />
           </div>
           <div className="font-poppins">
-            <h3 className="font-semibold text-xl md:text-2xl tracking-wider text-zinc-800 dark:text-zinc-200">TRIBE•DESIGNS</h3>
+            <h3 className="font-semibold text-xl md:text-2xl tracking-wider text-zinc-800 dark:text-zinc-200 uppercase">TRIBE•DESIGNS</h3>
             <p className="text-lg md:text-xl font-medium text-zinc-600 dark:text-zinc-400">.54.</p>
-            <p className="text-xs md:text-sm font-medium text-zinc-500 dark:text-zinc-500 tracking-[0.2em]">PRIDE IDENTITY</p>
+            <p className="text-xs md:text-sm font-medium text-zinc-500 dark:text-zinc-500 tracking-[0.2em] uppercase">PRIDE IDENTITY</p>
           </div>
         </div>
-        <p className="text-zinc-500 dark:text-zinc-400 max-w-sm mb-8 text-sm md:text-base">
+        <p className="text-zinc-500 dark:text-zinc-400 max-w-sm mb-8 text-sm md:text-base leading-relaxed">
           The new standard in African sportswear. Custom-made, high-performance, and deeply rooted in our heritage. Designed for the youth of the world.
         </p>
         <div className="flex space-x-4">
           {['Instagram', 'Twitter', 'TikTok'].map(s => (
-            <a key={s} href="#" className="text-sm font-bold hover:text-amber-500 transition-colors">{s}</a>
+            <a key={s} href="#" className="text-xs font-black uppercase tracking-widest hover:text-amber-500 transition-colors">{s}</a>
           ))}
         </div>
       </div>
       <div>
-        <h4 className="font-bold mb-6 tracking-widest uppercase text-xs text-zinc-400">Shop</h4>
+        <h4 className="font-black mb-6 tracking-widest uppercase text-xs text-zinc-400">Shop</h4>
         <ul className="space-y-4">
           {['Jerseys', 'Customizer', 'Heritage Collection', 'Limited Drops'].map(item => (
-            <li key={item}><Link to="/shop" className="text-sm font-medium hover:text-amber-500 transition-colors">{item}</Link></li>
+            <li key={item}><Link to="/shop" className="text-sm font-bold hover:text-amber-500 transition-colors uppercase">{item}</Link></li>
           ))}
         </ul>
       </div>
       <div>
-        <h4 className="font-bold mb-6 tracking-widest uppercase text-xs text-zinc-400">Support</h4>
+        <h4 className="font-black mb-6 tracking-widest uppercase text-xs text-zinc-400">Support</h4>
         <ul className="space-y-4">
           {['Sizing Guide', 'Shipping', 'Returns', 'Contact'].map(item => (
-            <li key={item}><a href="#" className="text-sm font-medium hover:text-amber-500 transition-colors">{item}</a></li>
+            <li key={item}><a href="#" className="text-sm font-bold hover:text-amber-500 transition-colors uppercase">{item}</a></li>
           ))}
         </ul>
       </div>
     </div>
-    <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-[10px] tracking-widest font-bold uppercase text-zinc-400">
-      <span>© 2024 TRIBE DESIGNS GLOBAL. ALL RIGHTS RESERVED.</span>
+    <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-[10px] tracking-widest font-black uppercase text-zinc-400">
+      <span>© 2026 TRIBE DESIGNS GLOBAL. ALL RIGHTS RESERVED.</span>
       <div className="flex space-x-8">
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Service</a>
+        <a href="#" className="hover:text-amber-500 transition-colors">Privacy Policy</a>
+        <a href="#" className="hover:text-amber-500 transition-colors">Terms of Service</a>
       </div>
     </div>
   </footer>
