@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../App';
-import { Save, MapPin, User, CheckCircle2, LocateFixed, Loader2 } from 'lucide-react';
+import { Save, MapPin, User, CheckCircle2, LocateFixed, Loader2, Camera, Upload } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
   const { user, updateUser } = useApp();
@@ -37,6 +38,18 @@ const SettingsPage: React.FC = () => {
     }));
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setFormData(prev => ({ ...prev, avatar: base64String }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleUseLocation = () => {
     if (!navigator.geolocation) {
       alert("Geolocation is not supported by your browser");
@@ -59,7 +72,7 @@ const SettingsPage: React.FC = () => {
               city: data.address.city || data.address.town || data.address.village || prev.address.city,
               state: data.address.state || prev.address.state,
               zip: data.address.postcode || prev.address.zip,
-              country: 'India' // Enforce India
+              country: 'India'
             }
           }));
         }
@@ -85,16 +98,41 @@ const SettingsPage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 md:py-16">
         <h1 className="text-4xl md:text-6xl font-syne font-black mb-2 uppercase tracking-tighter">SETTINGS</h1>
-        <p className="text-zinc-500 mb-8 font-medium">Manage your identity and delivery preferences.</p>
+        <p className="text-zinc-500 mb-8 font-medium">Manage your identity, profile picture, and delivery preferences.</p>
 
         <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Personal Info */}
             <div className="space-y-6">
                 <div className="flex items-center gap-3 mb-6 pb-2 border-b border-zinc-200 dark:border-zinc-800">
                     <User className="text-amber-500" size={24} />
-                    <h2 className="text-xl font-syne font-bold uppercase">Profile Details</h2>
+                    <h2 className="text-xl font-syne font-bold uppercase">Identity</h2>
                 </div>
                 
+                {/* Profile Picture Upload */}
+                <div className="flex items-center gap-6 mb-8">
+                    <div className="relative w-24 h-24 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 group">
+                        {formData.avatar ? (
+                            <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-zinc-400">
+                                <User size={40} />
+                            </div>
+                        )}
+                        <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
+                            <Upload size={20} />
+                            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                        </label>
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-sm uppercase mb-1">Profile Photo</h3>
+                        <p className="text-xs text-zinc-500 mb-2">Upload from your media files.</p>
+                        <label className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-xs font-black uppercase cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
+                            <Camera size={14} /> Upload New
+                            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                        </label>
+                    </div>
+                </div>
+
                 <div className="space-y-4">
                     <div>
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1 block">Full Name</label>
@@ -113,9 +151,11 @@ const SettingsPage: React.FC = () => {
                             type="email"
                             value={formData.email}
                             onChange={handleChange}
-                            className="w-full bg-zinc-100 dark:bg-zinc-900 border-none rounded-xl px-4 py-3 font-medium focus:ring-2 focus:ring-amber-500 outline-none"
-                            placeholder="kwame@example.com"
+                            readOnly
+                            className="w-full bg-zinc-100 dark:bg-zinc-900 border-none rounded-xl px-4 py-3 font-medium focus:ring-2 focus:ring-amber-500 outline-none opacity-60 cursor-not-allowed"
+                            title="Email used for login cannot be changed"
                         />
+                         <p className="text-[10px] text-zinc-500 mt-1">Email is locked to your 54 Street access.</p>
                     </div>
                     <div>
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1 block">Phone Number</label>

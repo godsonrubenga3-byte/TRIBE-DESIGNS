@@ -2,26 +2,25 @@
 import React, { useState } from 'react';
 import { JERSEYS } from '../constants';
 import { useApp } from '../App';
-import { ShoppingCart, Eye, Filter } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 
 const ShopPage: React.FC = () => {
   const { addToCart } = useApp();
-  const [activeCategory, setActiveCategory] = useState<'All' | 'Modern' | 'Heritage' | 'Fusion'>('All');
+  const [activeCategory, setActiveCategory] = useState<'Heritage' | 'Modern'>('Heritage');
 
-  const filtered = activeCategory === 'All' 
-    ? JERSEYS 
-    : JERSEYS.filter(j => j.category === activeCategory);
+  // Ensure we only show items that match the active category
+  const filtered = JERSEYS.filter(j => j.category === activeCategory);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-6 md:gap-8">
         <div>
           <h1 className="text-4xl md:text-7xl font-syne font-black tracking-tighter uppercase mb-2 md:mb-4">THE SHOP</h1>
-          <p className="text-sm md:text-base text-zinc-500 max-w-md font-medium">Limited release jerseys from our signature series. Ready to wear, ready to flex.</p>
+          <p className="text-sm md:text-base text-zinc-500 max-w-md font-medium">Limited release items. From traditional heritage to modern street luxury.</p>
         </div>
         
         <div className="flex flex-wrap gap-2 w-full md:w-auto">
-          {['All', 'Modern', 'Heritage', 'Fusion'].map((cat) => (
+          {['Heritage', 'Modern'].map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat as any)}
@@ -31,7 +30,7 @@ const ShopPage: React.FC = () => {
                   : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800'
               }`}
             >
-              {cat}
+              {cat.toUpperCase()}
             </button>
           ))}
         </div>
@@ -74,7 +73,7 @@ const ShopPage: React.FC = () => {
 
       {filtered.length === 0 && (
         <div className="text-center py-20 opacity-50">
-          <p className="text-xl md:text-2xl font-bold">NO JERSEYS FOUND IN THIS CATEGORY</p>
+          <p className="text-xl md:text-2xl font-bold">NO ITEMS FOUND IN THIS CATEGORY</p>
         </div>
       )}
     </div>

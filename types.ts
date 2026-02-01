@@ -4,16 +4,21 @@ export interface Product {
   name: string;
   price: number;
   image: string;
-  category: 'Modern' | 'Heritage' | 'Fusion';
+  category: 'Modern' | 'Heritage';
   description: string;
 }
 
 export interface CustomizationOptions {
-  name: string;
-  number: string;
-  basePattern: string;
-  accentColor: string;
-  font?: string;
+  mode: 'athletic' | 'printout';
+  name?: string;
+  number?: string;
+  layout?: 'name-top' | 'number-top';
+  kit?: 'dark' | 'light';
+  baseColor?: string;
+  uploadedImage?: string;
+  printText?: string;
+  printFont?: string;
+  placement?: 'front' | 'back';
   size?: string;
 }
 
@@ -26,6 +31,7 @@ export interface UserProfile {
   name: string;
   email: string;
   phone: string;
+  avatar?: string; // Base64 string for profile picture
   address: {
     street: string;
     city: string;

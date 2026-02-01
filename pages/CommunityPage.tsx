@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { MessageSquare, ThumbsUp, Send, Star, Image as ImageIcon } from 'lucide-react';
+import { useApp } from '../App';
+import { MessageSquare, ThumbsUp, Send, Star, Image as ImageIcon, Users } from 'lucide-react';
 
 interface Comment {
   id: string;
@@ -13,7 +14,8 @@ interface Post {
   id: number;
   author: string;
   handle: string;
-  avatar: string;
+  avatar?: string;
+  initials?: string;
   timestamp: string;
   content: string;
   image?: string;
@@ -29,7 +31,7 @@ const INITIAL_POSTS: Post[] = [
     handle: "@kofi_design",
     avatar: "https://i.pravatar.cc/150?img=11",
     timestamp: "2h ago",
-    content: "Just received my Custom Kente Shift jersey! The quality is insane. The AI suggestion was spot on with the color palette. 🌍🔥 #TribeDesigns",
+    content: "Just received my Pan African Dark Kit! The sizing is perfect on the chest. 🌍🔥 #TribeDesigns",
     image: "https://images.unsplash.com/photo-1540331547168-8b63109225b7?auto=format&fit=crop&q=80&w=800",
     likes: 136,
     isLiked: false,
@@ -44,24 +46,17 @@ const INITIAL_POSTS: Post[] = [
     handle: "@naija_prince",
     avatar: "https://i.pravatar.cc/150?img=33",
     timestamp: "4h ago",
-    content: "Anyone going to the Lagos pop-up next week? Let's link up at 54 Street booth! I'll be wearing the new Heritage Pack.",
+    content: "Creating a custom printout with my photography on the back. This studio tool is crazy.",
     likes: 89,
     isLiked: true,
     comments: []
-  },
-  {
-    id: 3,
-    author: "Sipho Dlamini",
-    handle: "@zulu_tech",
-    avatar: "https://i.pravatar.cc/150?img=59",
-    timestamp: "6h ago",
-    content: "Thinking about a fusion piece combining Maasai beads with modern tech-fleece. Needs to be breathable for the summer though. Thoughts?",
-    likes: 245,
-    isLiked: false,
-    comments: [
-       { id: 'c3', author: "@kofi_design", text: "Would cop immediately.", timestamp: "5h ago" }
-    ]
   }
+];
+
+const TOP_CONTRIBUTORS = [
+    { name: 'Amara Diop', xp: 4500 },
+    { name: 'David Okafor', xp: 3200 },
+    { name: 'Sarah Mbeki', xp: 2800 },
 ];
 
 const PostItem: React.FC<{ post: Post; onLike: (id: number) => void; onComment: (id: number, text: string) => void }> = ({ post, onLike, onComment }) => {
@@ -78,11 +73,17 @@ const PostItem: React.FC<{ post: Post; onLike: (id: number) => void; onComment: 
     return (
         <div className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-xl transition-all duration-300">
             <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 md:w-14 md:h-14 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden border-2 border-amber-500 p-0.5">
-                    <img src={post.avatar} alt={post.author} className="w-full h-full rounded-full object-cover" />
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden border-2 border-amber-500 p-0.5 flex items-center justify-center">
+                    {post.avatar ? (
+                        <img src={post.avatar} alt={post.author} className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                        <div className="w-full h-full rounded-full bg-zinc-900 text-amber-500 flex items-center justify-center font-black text-sm">
+                            {post.initials || 'TD'}
+                        </div>
+                    )}
                 </div>
                 <div>
-                    <h4 className="font-bold text-base md:text-lg leading-none mb-1 text-zinc-900 dark:text-zinc-100">{post.handle}</h4>
+                    <h4 className="font-bold text-base md:text-lg leading-none mb-1 text-zinc-900 dark:text-zinc-100">{post.author}</h4>
                     <span className="text-[10px] text-zinc-400 uppercase font-black tracking-widest">{post.timestamp}</span>
                 </div>
             </div>
@@ -121,8 +122,8 @@ const PostItem: React.FC<{ post: Post; onLike: (id: number) => void; onComment: 
                         <div className="bg-zinc-50 dark:bg-zinc-950/50 rounded-2xl p-4 space-y-4 max-h-60 overflow-y-auto custom-scrollbar">
                             {post.comments.map((comment) => (
                                 <div key={comment.id} className="flex gap-3">
-                                    <div className="w-8 h-8 bg-zinc-200 dark:bg-zinc-800 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-zinc-500">
-                                        {comment.author.substring(1, 3).toUpperCase()}
+                                    <div className="w-8 h-8 bg-zinc-200 dark:bg-zinc-800 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-zinc-500 overflow-hidden">
+                                        {comment.author.includes('@') ? comment.author.substring(1,3) : comment.author.substring(0,2)}
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex justify-between items-baseline">
@@ -161,19 +162,39 @@ const PostItem: React.FC<{ post: Post; onLike: (id: number) => void; onComment: 
 }
 
 const CommunityPage: React.FC = () => {
+  const { user } = useApp();
   const [posts, setPosts] = useState<Post[]>(INITIAL_POSTS);
   const [newPostText, setNewPostText] = useState("");
   const [councilFeedback, setCouncilFeedback] = useState('');
   const [councilSubmitted, setCouncilSubmitted] = useState(false);
+
+  // Helper to generate a handle from name or fallback
+  const getUserHandle = () => {
+      if (user.name) {
+          return `@${user.name.toLowerCase().replace(/\s+/g, '_')}`;
+      }
+      return '@new_blood';
+  };
+
+  // Helper to generate initials
+  const getUserInitials = () => {
+      if (user.name) {
+          return user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      }
+      return 'NB';
+  };
+
+  const getUserName = () => user.name || "Anonymous Member";
 
   const handleCreatePost = () => {
     if (!newPostText.trim()) return;
     
     const newPost: Post = {
         id: Date.now(),
-        author: "You",
-        handle: "@new_member",
-        avatar: "https://i.pravatar.cc/150?img=12", // Default placeholder
+        author: getUserName(),
+        handle: getUserHandle(),
+        avatar: user.avatar, // Use persistent avatar
+        initials: getUserInitials(),
         timestamp: "Just now",
         content: newPostText,
         likes: 0,
@@ -203,7 +224,7 @@ const CommunityPage: React.FC = () => {
         if (post.id === postId) {
             const newComment: Comment = {
                 id: `c-${Date.now()}`,
-                author: "@new_member",
+                author: getUserName(),
                 text: text,
                 timestamp: "Just now"
             };
@@ -229,11 +250,17 @@ const CommunityPage: React.FC = () => {
        {/* Hero */}
        <div className="bg-amber-500 py-16 md:py-24 px-6 text-center">
           <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <span className="inline-block px-4 py-1.5 bg-black text-white text-[10px] font-black tracking-widest uppercase rounded-full mb-6">Access Granted: Member #3421</span>
+            <span className="inline-block px-4 py-1.5 bg-black text-white text-[10px] font-black tracking-widest uppercase rounded-full mb-6">
+                Access Granted: {user.name ? user.name : 'Member #3421'}
+            </span>
             <h1 className="text-4xl md:text-9xl font-syne font-black mb-4 md:mb-6 uppercase tracking-tighter leading-none text-black">THE 54 STREET</h1>
             <p className="text-base md:text-2xl font-bold max-w-2xl mx-auto text-black/80">
                 Welcome to the inner circle. Where culture meets street, and the tribe shapes the future.
             </p>
+             <div className="flex justify-center items-center gap-2 mt-6">
+                <Users size={20} className="text-black" />
+                <span className="text-sm font-black uppercase text-black tracking-widest">15,420 Active Members</span>
+            </div>
           </div>
        </div>
 
@@ -251,14 +278,20 @@ const CommunityPage: React.FC = () => {
              {/* Create Post Input */}
              <div className="bg-white dark:bg-zinc-900 p-4 md:p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
                 <div className="flex gap-4">
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-zinc-200 dark:bg-zinc-800 rounded-full flex-shrink-0 overflow-hidden">
-                        <img src="https://i.pravatar.cc/150?img=12" alt="You" className="w-full h-full object-cover" />
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-zinc-200 dark:bg-zinc-800 rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center">
+                        {user.avatar ? (
+                             <img src={user.avatar} alt="You" className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full bg-amber-500 flex items-center justify-center font-black text-xs md:text-sm text-black">
+                                {getUserInitials()}
+                            </div>
+                        )}
                     </div>
                     <div className="flex-1 space-y-4">
                         <textarea 
                             value={newPostText}
                             onChange={(e) => setNewPostText(e.target.value)}
-                            placeholder="What's on your mind? Share your designs..." 
+                            placeholder={`What's on your mind, ${user.name ? user.name.split(' ')[0] : 'fam'}? Share your designs...`} 
                             className="w-full bg-transparent border-b-2 border-zinc-100 dark:border-zinc-800 focus:border-amber-500 outline-none p-2 text-base md:text-lg font-medium resize-none transition-colors dark:text-white placeholder:text-zinc-500"
                             rows={2}
                         />
@@ -328,18 +361,18 @@ const CommunityPage: React.FC = () => {
                    Top Contributors
                 </h3>
                 <div className="space-y-6">
-                   {[1, 2, 3].map((i) => (
+                   {TOP_CONTRIBUTORS.map((c, i) => (
                       <div key={i} className="flex items-center gap-4">
                          <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-black text-sm text-zinc-400">
-                            {i}
+                            {i + 1}
                          </div>
                          <div className="flex-1">
-                            <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">Member_{999-i}</h4>
+                            <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{c.name}</h4>
                             <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-2">
-                                <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: `${100 - i * 15}%` }}></div>
+                                <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: `${(c.xp / 5000) * 100}%` }}></div>
                             </div>
                          </div>
-                         <span className="text-[10px] font-black uppercase text-amber-500">{2000 - i * 350} XP</span>
+                         <span className="text-[10px] font-black uppercase text-amber-500">{c.xp} XP</span>
                       </div>
                    ))}
                 </div>
