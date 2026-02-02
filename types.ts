@@ -41,6 +41,20 @@ export interface UserProfile {
   };
 }
 
+export interface Order {
+  id: string;
+  date: string;
+  items: CartItem[];
+  total: number;
+  status: 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered';
+  paymentMethod: 'card' | 'momo' | 'crypto' | 'cod';
+  shippingDetails: {
+    name: string;
+    address: string;
+    city: string;
+  };
+}
+
 export enum Theme {
   LIGHT = 'light',
   DARK = 'dark'

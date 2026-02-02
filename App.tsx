@@ -9,7 +9,7 @@ import {
   User,
   Settings
 } from 'lucide-react';
-import { Theme, CartItem, Product, UserProfile } from './types';
+import { Theme, CartItem, Product, UserProfile, Order } from './types';
 import LandingPage from './pages/LandingPage';
 import ShopPage from './pages/ShopPage';
 import CustomizerPage from './pages/CustomizerPage';
@@ -17,19 +17,22 @@ import CartPage from './pages/CartPage';
 import CommunityPage from './pages/CommunityPage';
 import SettingsPage from './pages/SettingsPage';
 
-// Context for Cart, Theme, User, and Community Status
+// Context for Cart, Theme, User, Community Status, and Orders
 interface AppContextType {
   theme: Theme;
   setTheme: (t: Theme) => void;
   cart: CartItem[];
   addToCart: (p: Product, custom?: any) => void;
   removeFromCart: (id: string) => void;
+  clearCart: () => void;
   toggleCart: () => void;
   isCartOpen: boolean;
   user: UserProfile;
   updateUser: (u: UserProfile) => void;
   isCommunityMember: boolean;
   joinCommunity: (email: string) => void;
+  orders: Order[];
+  addOrder: (o: Order) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -76,6 +79,15 @@ const App: React.FC = () => {
     }
   });
 
+  const [orders, setOrders] = useState<Order[]>(() => {
+    try {
+      const savedOrders = window.localStorage.getItem('tribe-designs-orders');
+      return savedOrders ? JSON.parse(savedOrders) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [user, setUser] = useState<UserProfile>(() => {
     try {
       const savedUser = window.localStorage.getItem('tribe-designs-user');
@@ -118,6 +130,14 @@ const App: React.FC = () => {
 
   useEffect(() => {
     try {
+      window.localStorage.setItem('tribe-designs-orders', JSON.stringify(orders));
+    } catch (error) {
+      console.error("Failed to save orders to localStorage:", error);
+    }
+  }, [orders]);
+
+  useEffect(() => {
+    try {
       window.localStorage.setItem('tribe-designs-user', JSON.stringify(user));
     } catch (error) {
       console.error("Failed to save user to localStorage:", error);
@@ -139,6 +159,14 @@ const App: React.FC = () => {
     setCart(prev => prev.filter(item => item.id !== id));
   };
 
+  const clearCart = () => {
+    setCart([]);
+  };
+
+  const addOrder = (order: Order) => {
+    setOrders(prev => [order, ...prev]);
+  };
+
   const updateUser = (u: UserProfile) => {
     setUser(u);
   };
@@ -158,7 +186,7 @@ const App: React.FC = () => {
   const toggleCart = () => setIsCartOpen(!isCartOpen);
 
   return (
-    <AppContext.Provider value={{ theme, setTheme, cart, addToCart, removeFromCart, toggleCart, isCartOpen, user, updateUser, isCommunityMember, joinCommunity }}>
+    <AppContext.Provider value={{ theme, setTheme, cart, addToCart, removeFromCart, clearCart, toggleCart, isCartOpen, user, updateUser, isCommunityMember, joinCommunity, orders, addOrder }}>
       <HashRouter>
         <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 selection:bg-amber-400 selection:text-black transition-all duration-500 w-full">
           <Navbar />
