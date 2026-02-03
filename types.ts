@@ -5,7 +5,10 @@ export interface Product {
   price: number;
   image: string;
   category: 'Modern' | 'Heritage';
+  subcategory: 'bags' | 'jewelry' | 'clothing' | 'shoes' | 'hoodies' | 'hair' | 'jeans';
   description: string;
+  customizable?: boolean;
+  gender?: 'male' | 'female' | 'unisex';
 }
 
 export interface CustomizationOptions {

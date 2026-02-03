@@ -1,8 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PRINTOUT_COLORS, SIZE_CHART } from '../constants';
 import { useApp } from '../App';
 import { Save, Info, Check, Ruler, Upload, Shirt, Layout, Type } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Product } from '../types';
 
 const ATHLETIC_FONTS = [
   { id: 'college', name: 'VARSITY', family: "'Space Grotesk', sans-serif", letterSpacing: '0.05em' },
@@ -19,9 +21,17 @@ const SIZES = Object.keys(SIZE_CHART) as Array<keyof typeof SIZE_CHART>;
 
 const CustomizerPage: React.FC = () => {
   const { addToCart } = useApp();
+  const location = useLocation();
   
   // MAIN MODE STATE
   const [mode, setMode] = useState<'athletic' | 'printout'>('athletic');
+
+  // Check for incoming state from ShopPage
+  useEffect(() => {
+      if (location.state && location.state.mode) {
+          setMode(location.state.mode);
+      }
+  }, [location]);
 
   // ATHLETIC STATE
   const [kitType, setKitType] = useState<'dark' | 'light'>('dark');
@@ -54,14 +64,15 @@ const CustomizerPage: React.FC = () => {
   };
 
   const handleSave = () => {
-    const customProduct = {
+    const customProduct: Product = {
       id: `custom-${Date.now()}`,
       name: mode === 'athletic' ? `PAN AFRICAN ${kitType.toUpperCase()} KIT` : `CUSTOM PRINT ${baseColor.name.toUpperCase()}`,
       price: mode === 'athletic' ? 120 : 65,
       image: mode === 'athletic' 
         ? 'https://images.unsplash.com/photo-1540331547168-8b63109225b7?auto=format&fit=crop&q=80&w=800' 
         : 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=800',
-      category: 'Modern' as const,
+      category: 'Modern',
+      subcategory: mode === 'athletic' ? 'clothing' : 'hoodies', // Default subcat for custom items
       description: `Custom ${mode} design. Size ${selectedSize}.`
     };
 
