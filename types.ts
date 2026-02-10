@@ -5,7 +5,7 @@ export interface Product {
   price: number;
   image: string;
   category: 'Modern' | 'Heritage';
-  subcategory: 'bags' | 'jewelry' | 'clothing' | 'shoes' | 'hoodies' | 'hair' | 'jeans';
+  subcategory: 'jerseys' | 'hoodies' | 't-shirts';
   description: string;
   customizable?: boolean;
   gender?: 'male' | 'female' | 'unisex';
@@ -17,7 +17,18 @@ export interface CustomizationOptions {
   number?: string;
   layout?: 'name-top' | 'number-top';
   kit?: 'dark' | 'light';
-  baseColor?: string;
+  // Granular Colors
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  collarColor?: string;
+  patternColor?: string;
+  showPattern?: boolean;
+  
+  // Font Sizing
+  nameSize?: 'S' | 'M' | 'L';
+  numberSize?: 'S' | 'M' | 'L';
+  
   uploadedImage?: string;
   printText?: string;
   printFont?: string;

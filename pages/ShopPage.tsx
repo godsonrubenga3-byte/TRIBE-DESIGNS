@@ -12,10 +12,10 @@ const ShopPage: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<'Heritage' | 'Modern'>('Heritage');
   const [activeSubCategory, setActiveSubCategory] = useState<string>('all');
 
-  // Define subcategories for tabs
+  // Define subcategories for tabs based on user requirements
   const subCategories = activeCategory === 'Heritage' 
-    ? ['all', 'bags', 'jewelry', 'clothing']
-    : ['all', 'shoes', 'hoodies', 'hair', 'jeans'];
+    ? ['all', 'jerseys']
+    : ['all', 'hoodies', 't-shirts'];
 
   // Filter items
   const filtered = JERSEYS.filter(j => {
@@ -25,9 +25,10 @@ const ShopPage: React.FC = () => {
   });
 
   const handleProductAction = (product: Product) => {
-      if (product.category === 'Modern' && product.subcategory === 'hoodies' && product.customizable) {
-          // Redirect customizable sweaters to customizer
-          navigate('/customize', { state: { mode: 'printout', preselectedItem: product.name } });
+      if (product.customizable) {
+          // Determine mode based on subcategory
+          const mode = product.subcategory === 'jerseys' ? 'athletic' : 'printout';
+          navigate('/customize', { state: { mode, preselectedItem: product.name } });
       } else {
           addToCart(product);
       }
@@ -39,7 +40,7 @@ const ShopPage: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
             <div>
             <h1 className="text-4xl md:text-7xl font-syne font-black tracking-tighter uppercase mb-2 md:mb-4">THE SHOP</h1>
-            <p className="text-sm md:text-base text-zinc-500 max-w-md font-medium">Limited release items. From traditional heritage to modern street luxury.</p>
+            <p className="text-sm md:text-base text-zinc-500 max-w-md font-medium">Limited release items. Authentic African Heritage Jerseys & Modern Streetwear.</p>
             </div>
             
             <div className="flex bg-zinc-100 dark:bg-zinc-900 p-1.5 rounded-2xl w-full md:w-auto">
@@ -74,13 +75,13 @@ const ShopPage: React.FC = () => {
                         : 'bg-white dark:bg-zinc-900 text-zinc-500 hover:border-zinc-400'
                     }`}
                 >
-                    {sub === 'all' ? 'VIEW ALL' : sub}
+                    {sub === 'all' ? 'VIEW ALL' : sub.replace('-', ' ')}
                 </button>
             ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 md:gap-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10 md:gap-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {filtered.map((product) => (
           <div key={product.id} className="group relative">
             <div className="aspect-[3/4] overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900 relative">
