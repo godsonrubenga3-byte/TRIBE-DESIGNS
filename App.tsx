@@ -212,7 +212,7 @@ const LogoIcon = ({ className, ...props }: React.ImgHTMLAttributes<HTMLImageElem
     const { theme } = useApp();
     return (
         <img 
-            src={theme === Theme.DARK ? './dark.png' : './light.png'} 
+            src={theme === Theme.DARK ? './dark.avif' : './light.avif'} 
             alt="TRIBE DESIGNS" 
             loading="eager"
             className={`object-contain block ${className || ''}`}
