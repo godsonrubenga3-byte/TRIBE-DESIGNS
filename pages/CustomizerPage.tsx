@@ -1,41 +1,44 @@
-
 import React, { useState, useEffect } from 'react';
 import { PRINTOUT_COLORS, SIZE_CHART } from '../constants';
 import { useApp } from '../App';
-import { Save, Check, Ruler, Upload, Palette, Type, RefreshCcw, Eye, Shirt } from 'lucide-react';
+import { Save, Check, Ruler, Upload, Palette, Type, RefreshCcw, Eye, Shirt, Loader2, Sparkles, Sun, Moon } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { Product } from '../types';
+import JerseyPreview from '../components/JerseyPreview';
+import { supabaseService } from '../services/supabaseService';
 
 const ATHLETIC_FONTS = [
-  { id: 'college', name: 'VARSITY', family: "'Space Grotesk', sans-serif", letterSpacing: '0.05em' },
-  { id: 'impact', name: 'IMPACT', family: "'Syne', sans-serif", letterSpacing: '0.1em' },
+  { id: 'futuristic', name: 'FUTURISTIC', family: "'Syne', sans-serif" },
+  { id: 'angular', name: 'ANGULAR', family: "'Bebas Neue', sans-serif" },
+  { id: 'collegiate', name: 'COLLEGIATE', family: "'Space Grotesk', sans-serif" },
+  { id: 'varsity', name: 'VARSITY', family: "serif" },
 ];
 
-const COLORS = [
-  { name: 'Pitch Black', hex: '#121212' },
-  { name: 'Pure White', hex: '#ffffff' },
-  { name: 'Amber Gold', hex: '#fbbf24' },
-  { name: 'Heritage Green', hex: '#1DB954' },
-  { name: 'Royal Blue', hex: '#2563eb' },
-  { name: 'Fire Red', hex: '#dc2626' },
-  { name: 'Stone Grey', hex: '#e4e4e7' },
-  { name: 'Desert Sand', hex: '#d4d4d8' },
+const STYLES = [
+  { id: 'dark', name: 'DARK ELITE', torso: '#121212', sleeve: '#121212', collar: '#fbbf24', accent: '#1DB954' },
+  { id: 'light', name: 'PURE LIGHT', torso: '#ffffff', sleeve: '#ffffff', collar: '#2563eb', accent: '#dc2626' },
 ];
 
 const SIZES = Object.keys(SIZE_CHART) as Array<keyof typeof SIZE_CHART>;
 type TextSize = 'S' | 'M' | 'L';
 
 const CustomizerPage: React.FC = () => {
-  const { addToCart } = useApp();
+  const { addToCart, notify } = useApp();
   const location = useLocation();
   
+  const [styles, setStyles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<'athletic' | 'printout'>('athletic');
   const [viewSide, setViewSide] = useState<'front' | 'back'>('front');
+  const [activeStyle, setActiveStyle] = useState('dark');
+  const [frontImage, setFrontImage] = useState('');
+  const [backImage, setBackImage] = useState('');
 
   // JERSEY STATE
   const [torsoColor, setTorsoColor] = useState('#121212');
   const [sleeveColor, setSleeveColor] = useState('#121212');
   const [collarColor, setCollarColor] = useState('#fbbf24');
+  const [collarType, setCollarType] = useState<'v-neck' | 'crew' | 'polo'>('v-neck');
   const [accentColor, setAccentColor] = useState('#1DB954'); // Side stripe
   const [showMap, setShowMap] = useState(false); // For light kit map watermark
 
@@ -44,7 +47,7 @@ const CustomizerPage: React.FC = () => {
   const [number, setNumber] = useState('54');
   const [nameSize, setNameSize] = useState<TextSize>('M');
   const [numberSize, setNumberSize] = useState<TextSize>('M');
-  const [athleticFont, setAthleticFont] = useState(ATHLETIC_FONTS[1]);
+  const [athleticFont, setAthleticFont] = useState(ATHLETIC_FONTS[0]);
 
   // PRINTOUT STATE
   const [printText, setPrintText] = useState('STREET VIBE');
@@ -54,38 +57,53 @@ const CustomizerPage: React.FC = () => {
   const [selectedSize, setSelectedSize] = useState('L');
   const [draftSaved, setDraftSaved] = useState(false);
 
-  // Initialize based on selection from Shop
-  useEffect(() => {
-    if (location.state && location.state.preselectedItem) {
-      const item = location.state.preselectedItem;
-      if (location.state.mode) {
-          setMode(location.state.mode);
-      }
-      
-      if (item.includes('LIGHT')) {
-        // Pan African Light Kit Defaults
-        setTorsoColor('#e4e4e7'); // Stone Grey
-        setSleeveColor('#e4e4e7');
-        setCollarColor('#2563eb'); // Blue
-        setAccentColor('#dc2626'); // Red Side Stripe
-        setShowMap(true);
-      } else if (item.includes('DARK')) {
-        // Pan African Dark Kit Defaults
-        setTorsoColor('#121212'); // Black
-        setSleeveColor('#121212');
-        setCollarColor('#fbbf24'); // Gold
-        setAccentColor('#1DB954'); // Green Side Stripe
-        setShowMap(false);
-      }
-    }
-  }, [location]);
+  const applyStyle = (style: any) => {
+    setActiveStyle(style.id);
+    setTorsoColor(style.torso_color);
+    setSleeveColor(style.sleeve_color);
+    setCollarColor(style.collar_color);
+    setAccentColor(style.accent_color);
+    setFrontImage(style.image_url);
+    setBackImage(style.image_url_back);
+    setShowMap(style.id === 'light');
+  };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    const loadStyles = async () => {
+      try {
+        const data = await supabaseService.getGarmentStyles();
+        if (data && data.length > 0) {
+          setStyles(data);
+          const initial = data.find(s => s.id === 'dark') || data[0];
+          applyStyle(initial);
+        } else {
+          // Hardcoded fallbacks if DB is empty
+          const fallbackStyles = [
+            { id: 'dark', name: 'DARK ELITE', torso_color: '#121212', sleeve_color: '#121212', collar_color: '#fbbf24', accent_color: '#1DB954', image_url: 'https://hsctgucjbzbxmzcgpgga.supabase.co/storage/v1/object/public/assets/dark-front.png', image_url_back: 'https://hsctgucjbzbxmzcgpgga.supabase.co/storage/v1/object/public/assets/dark-back.png' },
+            { id: 'light', name: 'PURE LIGHT', torso_color: '#ffffff', sleeve_color: '#ffffff', collar_color: '#3F2A1D', accent_color: '#3F2A1D', image_url: 'https://hsctgucjbzbxmzcgpgga.supabase.co/storage/v1/object/public/assets/light-front.png', image_url_back: 'https://hsctgucjbzbxmzcgpgga.supabase.co/storage/v1/object/public/assets/light-back.png' }
+          ];
+          setStyles(fallbackStyles);
+          applyStyle(fallbackStyles[0]);
+        }
+      } catch (err) {
+        console.error("Failed to load styles:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadStyles();
+  }, []);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setUploadedImage(reader.result as string);
-      reader.readAsDataURL(file);
+      try {
+        const publicUrl = await supabaseService.uploadDesignImage(file);
+        setUploadedImage(publicUrl);
+      } catch (error) {
+        console.error("Upload failed:", error);
+        alert("Failed to upload image. Please try again.");
+      }
     }
   };
 
@@ -114,6 +132,7 @@ const CustomizerPage: React.FC = () => {
       secondaryColor: sleeveColor,
       accentColor: accentColor,
       collarColor: collarColor,
+      collarType: collarType,
       showPattern: showMap,
       uploadedImage,
       printText,
@@ -121,72 +140,17 @@ const CustomizerPage: React.FC = () => {
     });
   };
 
-  // --- STYLE HELPERS ---
-  const getNameSizeClass = (size: TextSize, view: 'front' | 'back') => {
-      if (view === 'front') {
-        switch(size) {
-            case 'S': return 'text-xl';
-            case 'M': return 'text-3xl';
-            case 'L': return 'text-5xl';
-        }
-      } else {
-        switch(size) {
-            case 'S': return 'text-2xl';
-            case 'M': return 'text-4xl';
-            case 'L': return 'text-6xl';
-        }
-      }
-  };
-
-  const getNumberSizeClass = (size: TextSize, view: 'front' | 'back') => {
-      if (view === 'front') {
-          switch(size) {
-              case 'S': return 'text-[100px]';
-              case 'M': return 'text-[140px]';
-              case 'L': return 'text-[180px]';
-          }
-      } else {
-           switch(size) {
-              case 'S': return 'text-[150px]';
-              case 'M': return 'text-[200px]';
-              case 'L': return 'text-[250px]';
-          }
-      }
-  };
-
-  // --- SVG COMPONENTS ---
-
-  const AfricaMapWatermark = () => (
-    <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-10" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice">
-       <path d="M100,20 C110,15 120,25 125,30 C130,35 140,40 145,50 C150,60 160,65 155,80 C150,95 160,110 150,130 C140,150 120,170 100,180 C80,170 60,150 50,130 C40,110 50,95 45,80 C40,65 50,60 55,50 C60,40 70,35 75,30 C80,25 90,15 100,20 Z" fill={collarColor} />
-    </svg>
-  );
-
-  const ShieldLogo = ({ className }: { className?: string }) => (
-    <div className={`${className} flex flex-col items-center border-2 p-1 rounded-t-sm rounded-b-xl relative bg-black/10 backdrop-blur-sm`} style={{ borderColor: collarColor }}>
-      <span className="text-[6px] font-bold uppercase" style={{ color: collarColor }}>Tribe Designs</span>
-      <span className="text-xs font-bold" style={{ color: collarColor }}>54</span>
-      <div className="flex gap-0.5 mt-0.5">
-        {[1, 2, 3].map(i => <div key={i} className="w-0.5 h-0.5 rounded-full" style={{ backgroundColor: collarColor }} />)}
-      </div>
-    </div>
-  );
-
-  const CircleLogo = ({ className }: { className?: string }) => (
-    <div className={`${className} flex flex-col items-center justify-center border-2 rounded-full p-1 bg-black/10 backdrop-blur-sm relative`} style={{ borderColor: collarColor }}>
-       {/* Simplified Map Shape inside circle */}
-       <svg viewBox="0 0 100 100" className="w-full h-full p-1">
-         <path d="M30,40 Q40,20 60,30 T70,60 T40,80 T20,60 Z" fill={collarColor} />
-       </svg>
-       <div className="absolute inset-0 rounded-full border-2 border-dashed opacity-50" style={{ borderColor: collarColor }}></div>
-       <span className="absolute -bottom-4 text-[6px] font-black uppercase tracking-wider whitespace-nowrap" style={{ color: collarColor }}>PAN AFRICA</span>
-    </div>
-  );
-
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 md:py-16">
-      {/* Mode Switcher */}
-      <div className="flex flex-col md:flex-row justify-center items-center gap-4 mb-12">
+      {loading ? (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
+          <Loader2 className="w-12 h-12 text-amber-500 animate-spin" />
+          <p className="text-[10px] font-black tracking-[0.3em] uppercase text-zinc-500">Initializing Lab...</p>
+        </div>
+      ) : (
+        <>
+          {/* Mode Switcher */}
+          <div className="flex flex-col md:flex-row justify-center items-center gap-4 mb-12">
         <div className="bg-zinc-100 dark:bg-zinc-900 p-1.5 rounded-2xl flex gap-1 shadow-inner">
           <button 
             onClick={() => setMode('athletic')}
@@ -237,115 +201,25 @@ const CustomizerPage: React.FC = () => {
       <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
         {/* REALISTIC JERSEY PREVIEW */}
         <div className="flex-1 w-full lg:sticky lg:top-32 h-fit flex justify-center">
-          <div className="relative w-full max-w-md h-[550px] transition-all duration-500 transform group">
-            
-            {/* MAIN BODY */}
-            <div 
-              className="absolute inset-x-12 top-6 bottom-0 rounded-t-[50px] shadow-2xl overflow-hidden border-x-[12px] transition-colors duration-500"
-              style={{ backgroundColor: torsoColor, borderColor: accentColor }}
-            >
-              {mode === 'athletic' && showMap && <AfricaMapWatermark />}
-              
-              {/* Lighting Effect Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/10 pointer-events-none z-10" />
-
-              {/* V-Neck Collar (Athletic Only or modified for Printout) */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-16 clip-path-v-neck flex items-center justify-center transition-colors duration-500 z-20" style={{ backgroundColor: collarColor }}>
-                  <div className="w-28 h-12 bg-inherit clip-path-v-neck mt-3 brightness-75" style={{ backgroundColor: torsoColor }}></div>
-              </div>
-
-              {/* CONTENT - FRONT */}
-              {viewSide === 'front' && (
-                <div className="relative h-full pt-28 px-8 flex flex-col items-center z-20 animate-in fade-in duration-500">
-                  
-                  {mode === 'athletic' ? (
-                    <>
-                      <div className="flex justify-between w-full mb-12 px-2">
-                        <ShieldLogo className="w-16 h-16" />
-                        <CircleLogo className="w-16 h-16" />
-                      </div>
-                      
-                      <div className="flex flex-col items-center w-full">
-                         {/* TRBE DESIGNS TEXT */}
-                         <h2 className="text-3xl font-black tracking-widest uppercase mb-12 text-center w-full" style={{ fontFamily: 'Syne', color: collarColor }}>
-                            TRBE DESIGNS
-                         </h2>
-                      </div>
-                    </>
-                  ) : (
-                    /* PRINTOUT FRONT */
-                    <div className="flex flex-col items-center justify-center flex-1 pb-20 w-full">
-                       {uploadedImage ? (
-                        <div className="w-48 h-48 rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 rotate-2">
-                           <img src={uploadedImage} className="w-full h-full object-cover" alt="Custom" />
-                        </div>
-                      ) : (
-                        <div className="border-4 border-dashed border-white/30 p-4 w-full h-64 flex items-center justify-center">
-                            <h2 className="text-4xl font-black tracking-tighter uppercase text-center text-white break-words w-full" style={{ fontFamily: 'Syne' }}>
-                            {printText || 'YOUR PRINT'}
-                            </h2>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* CONTENT - BACK */}
-              {viewSide === 'back' && (
-                <div className="relative h-full pt-16 px-8 flex flex-col items-center z-20 animate-in fade-in duration-500">
-                   
-                   {mode === 'athletic' ? (
-                     <>
-                        <span className="text-sm font-black tracking-[0.3em] uppercase mb-12" style={{ color: collarColor }}>UNITY</span>
-                        
-                        <div className="flex flex-col items-center mt-auto mb-20 w-full">
-                           {/* User Name */}
-                            {name && (
-                                <h2 className={`${getNameSizeClass(nameSize, 'back')} font-black tracking-[0.1em] uppercase mb-0 text-center w-full truncate`} style={{ color: collarColor, fontFamily: athleticFont.family }}>
-                                    {name}
-                                </h2>
-                            )}
-                            {/* User Number */}
-                           <span className={`${getNumberSizeClass(numberSize, 'back')} font-black tracking-tighter leading-none drop-shadow-lg`} style={{ color: collarColor, fontFamily: athleticFont.family }}>
-                                {number}
-                           </span>
-                        </div>
-                     </>
-                   ) : (
-                      /* PRINTOUT BACK */
-                      <div className="flex flex-col items-center justify-center h-full pb-20">
-                          <h2 className="text-3xl font-black tracking-widest uppercase text-white/50 rotate-90 origin-center absolute right-4 top-1/2 -translate-y-1/2">
-                              TRIBE
-                          </h2>
-                          <span className="text-xs text-white/50 font-mono absolute bottom-8">STREETWEAR EDITION</span>
-                      </div>
-                   )}
-                </div>
-              )}
-            </div>
-
-            {/* Sleeves */}
-            {/* Left Sleeve */}
-            <div 
-              className="absolute top-16 -left-4 w-28 h-44 -rotate-[35deg] rounded-tl-[40px] border-b-[16px] overflow-hidden transition-all duration-500 shadow-lg"
-              style={{ backgroundColor: sleeveColor, borderColor: collarColor }}
-            >
-              {mode === 'athletic' && showMap && <AfricaMapWatermark />}
-              <div className="absolute inset-0 bg-black/10" />
-            </div>
-            {/* Right Sleeve */}
-            <div 
-              className="absolute top-16 -right-4 w-28 h-44 rotate-[35deg] rounded-tr-[40px] border-b-[16px] overflow-hidden transition-all duration-500 shadow-lg"
-              style={{ backgroundColor: sleeveColor, borderColor: collarColor }}
-            >
-               {mode === 'athletic' && showMap && <AfricaMapWatermark />}
-              <div className="absolute inset-0 bg-black/10" />
-            </div>
-            
-            {/* Floor Shadow */}
-            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-[120%] h-12 bg-black/20 blur-2xl rounded-full" />
-          </div>
+          <JerseyPreview 
+            mode={mode}
+            viewSide={viewSide}
+            torsoColor={torsoColor}
+            sleeveColor={sleeveColor}
+            collarColor={collarColor}
+            collarType={collarType}
+            accentColor={accentColor}
+            showMap={showMap}
+            name={name}
+            number={number}
+            nameSize={nameSize}
+            numberSize={numberSize}
+            athleticFontFamily={athleticFont.family}
+            printText={printText}
+            uploadedImage={uploadedImage}
+            frontImage={frontImage}
+            backImage={backImage}
+          />
         </div>
 
         {/* CONTROLS AREA */}
@@ -357,102 +231,69 @@ const CustomizerPage: React.FC = () => {
                </p>
            </div>
 
-           {/* COLOR SECTIONS */}
+           {/* THEME SELECTION */}
            <div className="space-y-6">
                <div className="flex items-center gap-2 mb-2">
-                   <Palette size={18} className="text-amber-500" />
-                   <h3 className="text-xs font-black uppercase tracking-widest">
-                       {mode === 'athletic' ? 'Kit Configuration' : 'Base Color'}
-                   </h3>
+                   <Sparkles size={18} className="text-amber-500" />
+                   <h3 className="text-xs font-black uppercase tracking-widest">Base Theme</h3>
                </div>
 
-               <div className="space-y-6 bg-zinc-50 dark:bg-zinc-900 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 shadow-sm">
-                   
-                   {/* Torso */}
-                   <div>
-                       <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2 block">Base Color</label>
-                       <div className="flex gap-2 flex-wrap">
-                           {COLORS.map(c => (
-                               <button key={c.hex} onClick={() => { setTorsoColor(c.hex); setSleeveColor(c.hex); }} className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${torsoColor === c.hex ? 'border-amber-500 ring-2 ring-amber-500 ring-offset-2' : 'border-transparent'}`} style={{ backgroundColor: c.hex }} title={c.name} />
-                           ))}
-                       </div>
-                   </div>
-
-                   {mode === 'athletic' && (
-                       <>
-                        {/* Accents (Collar/Text) */}
-                        <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2 block">Accents (Logos & Collar)</label>
-                            <div className="flex gap-2 flex-wrap">
-                                {COLORS.map(c => (
-                                    <button key={c.hex} onClick={() => setCollarColor(c.hex)} className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${collarColor === c.hex ? 'border-amber-500 ring-2 ring-amber-500 ring-offset-2' : 'border-transparent'}`} style={{ backgroundColor: c.hex }} title={c.name} />
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Side Trim */}
-                        <div>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2 block">Side Trim</label>
-                            <div className="flex gap-2 flex-wrap">
-                                {COLORS.map(c => (
-                                    <button key={c.hex} onClick={() => setAccentColor(c.hex)} className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${accentColor === c.hex ? 'border-amber-500 ring-2 ring-amber-500 ring-offset-2' : 'border-transparent'}`} style={{ backgroundColor: c.hex }} title={c.name} />
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Map Toggle */}
-                        <div className="flex justify-between items-center pt-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Africa Map Watermark</label>
-                                <button onClick={() => setShowMap(!showMap)} className={`text-[10px] font-black px-3 py-1 rounded transition-colors ${showMap ? 'bg-amber-500 text-black' : 'bg-zinc-200 text-zinc-400'}`}>
-                                    {showMap ? 'VISIBLE' : 'HIDDEN'}
-                                </button>
-                        </div>
-                       </>
-                   )}
+               <div className="grid grid-cols-2 gap-4">
+                   {styles.map(style => (
+                       <button 
+                        key={style.id} 
+                        onClick={() => applyStyle(style)}
+                        className={`p-2 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${activeStyle === style.id ? 'border-amber-500 bg-amber-500/10 shadow-lg' : 'border-zinc-100 dark:border-zinc-800'}`}
+                       >
+                           <div className="w-full aspect-[2/3] rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 relative">
+                                <img src={style.image_url} alt={style.name} className="w-full h-full object-cover" />
+                                {/* Small Color Box Overlay */}
+                                <div className="absolute bottom-2 right-2 flex gap-1 bg-black/20 backdrop-blur-md p-1 rounded-lg border border-white/10">
+                                    <div className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: style.torso_color }} />
+                                    <div className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: style.collar_color }} />
+                                </div>
+                           </div>
+                           <span className={`text-[10px] font-black uppercase tracking-widest ${activeStyle === style.id ? 'text-amber-600' : 'text-zinc-500'}`}>{style.id}</span>
+                       </button>
+                   ))}
                </div>
+           </div>
+
+           {/* FONT SECTION */}
+           <div className="space-y-6">
+                <div className="flex items-center gap-2 mb-2">
+                    <Type size={18} className="text-amber-500" />
+                    <h3 className="text-xs font-black uppercase tracking-widest">Typography</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                    {ATHLETIC_FONTS.map(font => (
+                        <button 
+                            key={font.id} 
+                            onClick={() => setAthleticFont(font)}
+                            className={`py-4 px-2 rounded-xl border-2 text-xs font-black transition-all ${athleticFont.id === font.id ? 'border-amber-500 bg-amber-500 text-black shadow-md' : 'border-zinc-100 dark:border-zinc-800 text-zinc-400'}`}
+                            style={{ fontFamily: font.family }}
+                        >
+                            {font.name}
+                        </button>
+                    ))}
+                </div>
            </div>
 
            {/* IDENTITY SECTION */}
            {mode === 'athletic' ? (
                 <div className="space-y-6">
                     <div className="flex items-center gap-2 mb-2">
-                        <Type size={18} className="text-amber-500" />
-                        <h3 className="text-xs font-black uppercase tracking-widest">Player Identity</h3>
+                        <Shirt size={18} className="text-amber-500" />
+                        <h3 className="text-xs font-black uppercase tracking-widest">Player Details</h3>
                     </div>
                     <div className="grid grid-cols-1 gap-6">
                             <div className="space-y-2">
-                                <div className="flex justify-between items-center">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Last Name (Back)</label>
-                                    <div className="flex bg-zinc-100 dark:bg-zinc-800 rounded-lg p-0.5">
-                                        {(['S', 'M', 'L'] as TextSize[]).map((s) => (
-                                            <button 
-                                                key={s} 
-                                                onClick={() => setNameSize(s)}
-                                                className={`px-3 py-1 text-[10px] font-black rounded-md transition-all ${nameSize === s ? 'bg-white dark:bg-zinc-600 shadow-sm text-black dark:text-white' : 'text-zinc-400 hover:text-zinc-600'}`}
-                                            >
-                                                {s}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Squad Name</label>
                                 <input value={name} onChange={(e) => setName(e.target.value)} maxLength={12} className="w-full bg-zinc-100 dark:bg-zinc-900 p-4 rounded-xl font-bold uppercase outline-none focus:ring-2 focus:ring-amber-500 transition-all" />
                             </div>
                             <div className="space-y-2">
-                                <div className="flex justify-between items-center">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Number (Back)</label>
-                                    <div className="flex bg-zinc-100 dark:bg-zinc-800 rounded-lg p-0.5">
-                                        {(['S', 'M', 'L'] as TextSize[]).map((s) => (
-                                            <button 
-                                                key={s} 
-                                                onClick={() => setNumberSize(s)}
-                                                className={`px-3 py-1 text-[10px] font-black rounded-md transition-all ${numberSize === s ? 'bg-white dark:bg-zinc-600 shadow-sm text-black dark:text-white' : 'text-zinc-400 hover:text-zinc-600'}`}
-                                            >
-                                                {s}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                                <input value={number} onChange={(e) => setNumber(e.target.value)} maxLength={2} className="w-full bg-zinc-100 dark:bg-zinc-900 p-4 rounded-xl font-bold uppercase text-center outline-none focus:ring-2 focus:ring-amber-500 transition-all" />
+                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Squad Number</label>
+                                <input value={number} onChange={(e) => setNumber(e.target.value)} maxLength={2} className="w-full bg-zinc-100 dark:bg-zinc-900 p-4 rounded-xl font-bold uppercase text-center outline-none focus:ring-2 focus:ring-amber-500 transition-all text-2xl" />
                             </div>
                     </div>
                 </div>
@@ -510,6 +351,8 @@ const CustomizerPage: React.FC = () => {
            </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 };

@@ -1,27 +1,43 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { JERSEYS } from '../constants';
 import { useApp } from '../App';
-import { ShoppingCart, Edit3 } from 'lucide-react';
+import { ShoppingCart, Edit3, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
+import { supabaseService } from '../services/supabaseService';
 
 const ShopPage: React.FC = () => {
-  const { addToCart } = useApp();
+  const { addToCart, notify } = useApp();
   const navigate = useNavigate();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<'Heritage' | 'Modern'>('Heritage');
   const [activeSubCategory, setActiveSubCategory] = useState<string>('all');
 
-  // Define subcategories for tabs based on user requirements
-  const subCategories = activeCategory === 'Heritage' 
-    ? ['all', 'jerseys']
-    : ['all', 'hoodies', 't-shirts'];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await supabaseService.getProducts();
+        setProducts(data || []);
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+        notify("Failed to load inventory. Please refresh.", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Filter items
-  const filtered = JERSEYS.filter(j => {
-      const catMatch = j.category === activeCategory;
-      const subMatch = activeSubCategory === 'all' || j.subcategory === activeSubCategory;
-      return catMatch && subMatch;
+    fetchProducts();
+  }, []);
+
+  // Define subcategories for tabs - Locked to jerseys for now
+  const subCategories = ['all', 'jerseys'];
+
+  // Filter items - Forced to only show jerseys
+  const filtered = products.filter(j => {
+      const subMatch = j.subcategory === 'jerseys';
+      return subMatch;
   });
 
   const handleProductAction = (product: Product) => {
@@ -36,30 +52,18 @@ const ShopPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
-      <div className="flex flex-col gap-6 mb-12">
+      {loading ? (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
+          <Loader2 className="w-12 h-12 text-amber-500 animate-spin" />
+          <p className="text-[10px] font-black tracking-[0.3em] uppercase text-zinc-500">Loading Tribe Drops...</p>
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-col gap-6 mb-12">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
             <div>
-            <h1 className="text-4xl md:text-7xl font-syne font-black tracking-tighter uppercase mb-2 md:mb-4">THE SHOP</h1>
-            <p className="text-sm md:text-base text-zinc-500 max-w-md font-medium">Limited release items. Authentic African Heritage Jerseys & Modern Streetwear.</p>
-            </div>
-            
-            <div className="flex bg-zinc-100 dark:bg-zinc-900 p-1.5 rounded-2xl w-full md:w-auto">
-            {['Heritage', 'Modern'].map((cat) => (
-                <button
-                key={cat}
-                onClick={() => {
-                    setActiveCategory(cat as any);
-                    setActiveSubCategory('all');
-                }}
-                className={`flex-1 md:flex-none px-8 py-3 rounded-xl text-sm font-black tracking-widest uppercase transition-all ${
-                    activeCategory === cat 
-                    ? 'bg-black dark:bg-white text-white dark:text-black shadow-lg' 
-                    : 'text-zinc-400 hover:text-black dark:hover:text-white'
-                }`}
-                >
-                {cat.toUpperCase()}
-                </button>
-            ))}
+            <h1 className="text-4xl md:text-7xl font-syne font-black tracking-tighter uppercase mb-2 md:mb-4">THE KIT SHOP</h1>
+            <p className="text-sm md:text-base text-zinc-500 max-w-md font-medium">Authentic African Heritage & Pro Athletic Jerseys. Customize your legacy.</p>
             </div>
         </div>
 
@@ -134,11 +138,13 @@ const ShopPage: React.FC = () => {
         ))}
       </div>
 
-      {filtered.length === 0 && (
+      {filtered.length === 0 && !loading && (
         <div className="text-center py-20 opacity-50">
           <p className="text-xl md:text-2xl font-bold">NO ITEMS FOUND IN THIS COLLECTION</p>
         </div>
       )}
+    </>
+    )}
     </div>
   );
 };

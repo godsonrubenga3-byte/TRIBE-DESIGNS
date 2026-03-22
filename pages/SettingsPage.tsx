@@ -2,27 +2,17 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../App';
 import { Save, MapPin, User, CheckCircle2, LocateFixed, Loader2, Camera, Upload } from 'lucide-react';
+import { supabaseService } from '../services/supabaseService';
 
 const SettingsPage: React.FC = () => {
-  const { user, updateUser } = useApp();
+  const { user, updateUser, notify } = useApp();
   const [formData, setFormData] = useState(user);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
 
   useEffect(() => {
-    let updatedData = { ...user };
-    
-    // Ensure India is set if not already
-    if (updatedData.address.country !== 'India') {
-      updatedData.address = { ...updatedData.address, country: 'India' };
-    }
-
-    // Default to Indian prefix if phone is empty
-    if (!updatedData.phone) {
-        updatedData.phone = '+91 ';
-    }
-
-    setFormData(updatedData);
+    setFormData(user);
   }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,15 +28,25 @@ const SettingsPage: React.FC = () => {
     }));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setFormData(prev => ({ ...prev, avatar: base64String }));
-      };
-      reader.readAsDataURL(file);
+      if (file.size > 2 * 1024 * 1024) {
+        notify("Image too large. Max 2MB.", "error");
+        return;
+      }
+      
+      setLoading(true);
+      try {
+        const publicUrl = await supabaseService.uploadAvatar(file);
+        setFormData(prev => ({ ...prev, avatar: publicUrl }));
+        notify("Photo uploaded to storage", "success");
+      } catch (err) {
+        console.error(err);
+        notify("Failed to upload photo", "error");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -88,11 +88,20 @@ const SettingsPage: React.FC = () => {
     });
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateUser(formData);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setLoading(true);
+    try {
+      await updateUser(formData);
+      setSaved(true);
+      notify("Profile updated successfully", "success");
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      console.error(err);
+      notify("Failed to save changes", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -151,11 +160,10 @@ const SettingsPage: React.FC = () => {
                             type="email"
                             value={formData.email}
                             onChange={handleChange}
-                            readOnly
-                            className="w-full bg-zinc-100 dark:bg-zinc-900 border-none rounded-xl px-4 py-3 font-medium focus:ring-2 focus:ring-amber-500 outline-none opacity-60 cursor-not-allowed"
-                            title="Email used for login cannot be changed"
+                            className="w-full bg-zinc-100 dark:bg-zinc-900 border-none rounded-xl px-4 py-3 font-medium focus:ring-2 focus:ring-amber-500 outline-none"
+                            placeholder="user@example.com"
                         />
-                         <p className="text-[10px] text-zinc-500 mt-1">Email is locked to your 54 Street access.</p>
+                         <p className="text-[10px] text-zinc-500 mt-1">Email linked to your account</p>
                     </div>
                     <div>
                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1 block">Phone Number</label>
@@ -248,13 +256,18 @@ const SettingsPage: React.FC = () => {
             <div className="md:col-span-2 pt-6">
                 <button 
                     type="submit"
+                    disabled={loading}
                     className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-lg transition-all flex items-center justify-center gap-2 ${
                         saved 
                         ? 'bg-green-500 text-white'
                         : 'bg-black dark:bg-white text-white dark:text-black hover:bg-amber-500 dark:hover:bg-amber-500 hover:text-black shadow-xl'
-                    }`}
+                    } ${loading ? 'opacity-70 cursor-wait' : ''}`}
                 >
-                    {saved ? <><CheckCircle2 /> SAVED</> : <><Save size={20} /> SAVE CHANGES</>}
+                    {loading ? (
+                        <><Loader2 className="animate-spin" /> SAVING...</>
+                    ) : (
+                        saved ? <><CheckCircle2 /> SAVED</> : <><Save size={20} /> SAVE CHANGES</>
+                    )}
                 </button>
             </div>
         </form>

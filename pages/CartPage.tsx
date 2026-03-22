@@ -25,21 +25,18 @@ const CartPage: React.FC = () => {
 
   useEffect(() => {
     if (orders.length > 0 && cart.length === 0) {
-        // If coming to page empty but has orders, maybe prompt or just stay on bag?
-        // Let's default to bag but if they click tracking they see it.
+        setActiveTab('tracking');
     }
   }, []);
 
   useEffect(() => {
-    if(user.name || user.address.street) {
-        setShippingDetails({
-            name: user.name,
-            address: user.address.street,
-            city: user.address.city,
-            country: 'India',
-            zip: user.address.zip
-        });
-    }
+    setShippingDetails({
+        name: user.name || '',
+        address: user.address.street || '',
+        city: user.address.city || '',
+        country: user.address.country || 'India',
+        zip: user.address.zip || ''
+    });
   }, [user]);
 
   const handleUseLocation = () => {
@@ -321,14 +318,18 @@ const CartPage: React.FC = () => {
                                 <span>Subtotal</span>
                                 <span>${subtotal}</span>
                             </div>
-                            <div className="flex justify-between text-zinc-500 font-bold uppercase text-xs">
-                                <span>Shipping</span>
-                                <span>${shipping}</span>
-                            </div>
-                            <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 flex justify-between font-black text-xl md:text-2xl uppercase">
-                                <span>Total</span>
-                                <span>${total}</span>
-                            </div>
+                                    <div className="flex justify-between text-zinc-500 font-bold uppercase text-xs">
+                                        <span>Subtotal</span>
+                                        <span>${subtotal}</span>
+                                    </div>
+                                    <div className="flex justify-between text-zinc-500 font-bold uppercase text-xs">
+                                        <span>Shipping</span>
+                                        <span>${shipping}</span>
+                                    </div>
+                                    <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 flex justify-between font-black text-xl md:text-2xl uppercase">
+                                        <span>Total</span>
+                                        <span>${total}</span>
+                                    </div>
                             </div>
                             
                             <div className="space-y-4">

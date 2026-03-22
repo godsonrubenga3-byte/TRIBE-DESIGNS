@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Zap, Globe, Palette, Sparkles, ArrowRight } from 'lucide-react';
 import { useApp } from '../App';
-
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { isCommunityMember, joinCommunity } = useApp();
+  const { isCommunityMember, joinCommunity, user } = useApp();
   const [email, setEmail] = useState('');
 
   const handleJoin = (e: React.FormEvent) => {
@@ -41,18 +40,37 @@ const LandingPage: React.FC = () => {
             Custom-made jerseys that bridge the gap between ancient African artistry and modern street culture.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full px-6 sm:px-0">
-            <Link 
-              to="/shop" 
-              className="w-full sm:w-auto px-10 py-4 md:py-5 bg-white text-black font-syne font-black text-sm md:text-lg tracking-widest hover:bg-amber-500 transition-all rounded-none transform -skew-x-12 text-center"
-            >
-              SHOP COLLECTION
-            </Link>
-            <Link 
-              to="/customize" 
-              className="w-full sm:w-auto px-10 py-4 md:py-5 border-2 border-white text-white font-syne font-black text-sm md:text-lg tracking-widest hover:bg-white hover:text-black transition-all rounded-none transform -skew-x-12 text-center"
-            >
-              CUSTOMIZE YOURS
-            </Link>
+            {user?.email ? (
+              <>
+                <Link 
+                  to="/shop" 
+                  className="w-full sm:w-auto px-10 py-4 md:py-5 bg-white text-black font-syne font-black text-sm md:text-lg tracking-widest hover:bg-amber-500 transition-all rounded-none transform -skew-x-12 text-center"
+                >
+                  SHOP COLLECTION
+                </Link>
+                <Link 
+                  to="/customize" 
+                  className="w-full sm:w-auto px-10 py-4 md:py-5 border-2 border-white text-white font-syne font-black text-sm md:text-lg tracking-widest hover:bg-white hover:text-black transition-all rounded-none transform -skew-x-12 text-center"
+                >
+                  CUSTOMIZE YOURS
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link 
+                  to="/login" 
+                  className="w-full sm:w-auto px-10 py-4 md:py-5 bg-white text-black font-syne font-black text-sm md:text-lg tracking-widest hover:bg-amber-500 transition-all rounded-none transform -skew-x-12 text-center"
+                >
+                  SIGN IN
+                </Link>
+                <Link 
+                  to="/signup" 
+                  className="w-full sm:w-auto px-10 py-4 md:py-5 border-2 border-white text-white font-syne font-black text-sm md:text-lg tracking-widest hover:bg-white hover:text-black transition-all rounded-none transform -skew-x-12 text-center"
+                >
+                  CREATE ACCOUNT
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>

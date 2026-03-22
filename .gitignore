@@ -8,9 +8,14 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-#dist
-#dist-ssr
+dist
+dist-ssr
 *.local
+.env
+TODO.md
+FIXME.md
+*.tsbuildinfo
+/docs
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +27,11 @@ node_modules
 *.njsproj
 *.sln
 *.sw?
+
+#Missing features
+./docs/missing.json
+
+# Optional error logs
+error.log
+error.log.*
+error.json
