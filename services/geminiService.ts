@@ -1,9 +1,18 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+if (!apiKey) {
+  console.error('VITE_GEMINI_API_KEY is required. Check your .env file or Vercel Environment Variables.');
+}
+
+const ai = new GoogleGenAI({ apiKey: apiKey || '' });
 
 export const getDesignAdvice = async (userPrompt: string) => {
+  if (!apiKey) {
+    throw new Error("Gemini API Key is not configured.");
+  }
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",

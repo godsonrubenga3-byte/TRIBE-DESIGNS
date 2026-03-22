@@ -35,6 +35,7 @@ To ensure the backend works on Vercel, you must add these variables in the **Set
 | :--- | :--- |
 | `VITE_SUPABASE_URL` | *Your Supabase Project URL* |
 | `VITE_SUPABASE_ANON_KEY` | *Your Supabase Public/Anon Key* |
+| `VITE_GEMINI_API_KEY` | *Your Google GenAI API Key* |
 
 ### 2. Database Prerequisites
 Ensure you have executed the setup scripts in your Supabase SQL Editor:
