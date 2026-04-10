@@ -1,37 +1,16 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- PRIMARY SEO -->
-    <title>TRIBE DESIGNS | Pro African Heritage Jersey Lab</title>
-    <meta name="title" content="TRIBE DESIGNS | Pro African Heritage Jersey Lab">
-    <meta name="description" content="Design your own professional African heritage jerseys. High-performance athletic kits with authentic cultural motifs. Join the tribe and customize your legacy.">
-    <meta name="keywords" content="African Jersey, Custom Jersey, Heritage Kit, Naija Jersey, Black Star Retro, Soccer Customizer, Athletic Wear Africa">
-    <meta name="author" content="TRIBE DESIGNS">
-
-    <!-- OPEN GRAPH / FACEBOOK -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://tribe-designs.vercel.app/">
-    <meta property="og:title" content="TRIBE DESIGNS | Pro African Heritage Jersey Lab">
-    <meta property="og:description" content="Design your own professional African heritage jerseys. High-performance athletic kits with authentic cultural motifs.">
-    <meta property="og:image" content="https://hsctgucjbzbxmzcgpgga.supabase.co/storage/v1/object/public/assets/dark-front.png">
-
-    <!-- TWITTER -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://tribe-designs.vercel.app/">
-    <meta property="twitter:title" content="TRIBE DESIGNS | Pro African Heritage Jersey Lab">
-    <meta property="twitter:description" content="Design your own professional African heritage jerseys. High-performance athletic kits with authentic cultural motifs.">
-    <meta property="twitter:image" content="https://hsctgucjbzbxmzcgpgga.supabase.co/storage/v1/object/public/assets/dark-front.png">
-
+    <title>TRIBE DESIGNS | Custom African Jerseys</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         darkMode: 'class'
       }
     </script>
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -59,10 +38,27 @@
         background-image: radial-gradient(#fbbf24 1px, transparent 1px);
         background-size: 20px 20px;
       }
+      .clip-path-v-neck {
+        clip-path: polygon(0 0, 100% 0, 50% 100%);
+      }
     </style>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react-dom": "https://esm.sh/react-dom@^19.2.3",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0"
+  }
+}
+</script>
 </head>
   <body class="bg-white dark:bg-zinc-950 transition-colors duration-300">
     <div id="root"></div>
+    <!-- Explicitly import the main application script -->
     <script type="module" src="./index.tsx"></script>
   </body>
 </html>

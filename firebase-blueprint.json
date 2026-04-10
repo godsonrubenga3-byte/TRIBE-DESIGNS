@@ -1,0 +1,47 @@
+{
+  "entities": {
+    "Order": {
+      "title": "Order",
+      "description": "An order received from the customer app",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerEmail": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "customerWhatsApp": { "type": "string" },
+        "items": { "type": "array" },
+        "totalAmount": { "type": "number" },
+        "status": { 
+          "type": "string",
+          "enum": ["pending", "processing", "shipped", "delivered", "cancelled"]
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "shippingAddress": { "type": "object" },
+        "customizationDetails": { "type": "object" }
+      },
+      "required": ["customerName", "items", "totalAmount", "status", "createdAt"]
+    },
+    "AdminSettings": {
+      "title": "Admin Settings",
+      "description": "Configuration for the admin dashboard",
+      "type": "object",
+      "properties": {
+        "adminPhone": { "type": "string" },
+        "notificationsEnabled": { "type": "boolean" },
+        "whatsappAlerts": { "type": "boolean" }
+      }
+    }
+  },
+  "firestore": {
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Collection of orders"
+    },
+    "/admin_settings/{settingId}": {
+      "schema": "AdminSettings",
+      "description": "Admin configuration"
+    }
+  }
+}

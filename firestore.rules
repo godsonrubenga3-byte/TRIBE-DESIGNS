@@ -1,0 +1,55 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: orders
+// Document ID: auto-generated
+// Fields:
+//   - customerName: string (required)
+//   - customerEmail: string (optional)
+//   - customerPhone: string (optional)
+//   - items: list (required)
+//   - totalAmount: number (required)
+//   - status: string (required, enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'])
+//   - createdAt: timestamp (required)
+//   - updatedAt: timestamp (optional)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        request.auth.token.email == "godsonrubenga3@gmail.com";
+    }
+
+    function isValidOrder(data) {
+      return data.customerName is string && data.customerName.size() > 0 && data.customerName.size() < 100 &&
+             data.totalAmount is number && data.totalAmount >= 0 &&
+             data.status in ['pending', 'processing', 'shipped', 'delivered', 'cancelled'] &&
+             data.createdAt is timestamp;
+    }
+
+    // Orders: Customers can create, Admin can read/update/delete
+    match /orders/{orderId} {
+      // Allow creation from anyone (customer app) - in a real app, we'd restrict this more
+      // but for this demo, we assume the customer app writes here.
+      allow create: if true && isValidOrder(request.resource.data);
+      
+      // Only Admin can read and manage orders
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Admin Settings: Only Admin can access
+    match /admin_settings/{settingId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
