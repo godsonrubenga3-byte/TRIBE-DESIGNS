@@ -1,7 +1,8 @@
 {
-  "name": "TRIBE COMMAND | Admin Portal",
-  "description": "High-performance mission control for Tribe Designs. Real-time order management, WhatsApp integration, and business analytics.",
+  "name": "TRIBE DESIGNS - Custom African Jerseys",
+  "description": "A high-energy, youth-focused platform for custom-made African jerseys, featuring an AI-powered design assistant and real-time customizer.",
   "requestFramePermissions": [
-    "notifications"
+    "camera",
+    "geolocation"
   ]
 }

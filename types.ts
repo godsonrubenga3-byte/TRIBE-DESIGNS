@@ -60,20 +60,12 @@ export interface Order {
   date: string;
   items: CartItem[];
   total: number;
-  status: 'Pending' | 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
+  status: 'Processing' | 'Shipped' | 'Out for Delivery' | 'Delivered';
   paymentMethod: 'card' | 'momo' | 'crypto' | 'cod';
-  customer: {
-    name: string;
-    email: string;
-    phone: string;
-    whatsapp?: string;
-  };
   shippingDetails: {
+    name: string;
     address: string;
     city: string;
-    state: string;
-    zip: string;
-    country: string;
   };
 }
 
