@@ -31,13 +31,13 @@ const ShopPage: React.FC = () => {
     fetchProducts();
   }, []);
 
-  // Define subcategories for tabs - Locked to jerseys for now
-  const subCategories = ['all', 'jerseys'];
+  // Define subcategories for tabs - Derived from products
+  const subCategories = ['all', ...Array.from(new Set(products.map(p => p.subcategory)))];
 
-  // Filter items - Forced to only show jerseys
+  // Filter items based on active subcategory
   const filtered = products.filter(j => {
-      const subMatch = j.subcategory === 'jerseys';
-      return subMatch;
+      if (activeSubCategory === 'all') return true;
+      return j.subcategory === activeSubCategory;
   });
 
   const handleProductAction = (product: Product) => {
