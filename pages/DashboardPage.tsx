@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronRight, Zap, Globe, Palette, Sparkles, ArrowRight, MessageCircle, Shirt, ShoppingBag, Users, Crown, MessageSquare, Settings } from 'lucide-react';
+import { ChevronRight, Zap, Globe, Palette, Sparkles, ArrowRight, MessageCircle, Shirt, ShoppingBag, Users, Crown, MessageSquare, Settings, Truck } from 'lucide-react';
 import { useApp } from '../App';
 
 const DashboardPage: React.FC = () => {
@@ -141,9 +141,9 @@ const DashboardPage: React.FC = () => {
                 <Palette className="w-16 h-16 mb-4 group-hover:rotate-12 transition-transform" />
                 Customize Now
               </Link>
-              <Link to="/shop" className="group bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-black p-8 rounded-3xl font-black uppercase tracking-widest text-xl flex flex-col items-center justify-center h-32 shadow-2xl transition-all hover:scale-105 hover:shadow-3xl">
-                <ShoppingBag className="w-16 h-16 mb-4 group-hover:rotate-12 transition-transform" />
-                Browse Drops
+              <Link to="/track-order" className="group bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white p-8 rounded-3xl font-black uppercase tracking-widest text-xl flex flex-col items-center justify-center h-32 shadow-2xl transition-all hover:scale-105 hover:shadow-3xl">
+                <Truck className="w-16 h-16 mb-4 group-hover:rotate-12 transition-transform" />
+                Track Order
               </Link>
             </div>
           </div>

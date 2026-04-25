@@ -11,6 +11,7 @@ import CustomizerPage from './pages/CustomizerPage';
 import CartPage from './pages/CartPage';
 import CommunityPage from './pages/CommunityPage';
 import SettingsPage from './pages/SettingsPage';
+import TrackOrderPage from './pages/TrackOrderPage';
 import { supabaseService } from './services/supabaseService';
 import { supabase } from './src/utils/supabase/client';
 
@@ -223,6 +224,7 @@ const AppLayout: React.FC = () => {
           <Route path="/community" element={!session ? <Navigate to="/login" replace /> : <CommunityPage />} />
           <Route path="/dashboard" element={!session ? <Navigate to="/login" replace /> : <DashboardPage />} />
           <Route path="/settings" element={!session ? <Navigate to="/login" replace /> : <SettingsPage />} />
+          <Route path="/track-order" element={<TrackOrderPage />} />
         </Routes>
       </main>
       <Footer />
@@ -236,7 +238,12 @@ const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
 
-  const navLinks = [{ name: 'SHOP', path: '/shop' }, { name: 'CUSTOMIZE', path: '/customize' }, { name: 'THE VIBE', path: '/dashboard' }];
+  const navLinks = [
+    { name: 'SHOP', path: '/shop' },
+    { name: 'CUSTOMIZE', path: '/customize' },
+    { name: 'THE VIBE', path: '/dashboard' },
+    { name: 'TRACK', path: '/track-order' }
+  ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-900">
@@ -311,6 +318,7 @@ const Footer: React.FC = () => (
       <div>
         <h3 className="text-xs font-black tracking-[0.2em] text-zinc-400 mb-6 uppercase">Company</h3>
         <ul className="space-y-4 text-sm font-bold">
+          <li><Link to="/track-order" className="hover:text-amber-500 transition-colors uppercase">Track Order</Link></li>
           <li><a href="#" className="hover:text-amber-500 transition-colors uppercase">About Us</a></li>
           <li><a href="#" className="hover:text-amber-500 transition-colors uppercase">Sustainability</a></li>
           <li><a href="#" className="hover:text-amber-500 transition-colors uppercase">Terms</a></li>

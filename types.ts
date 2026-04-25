@@ -9,6 +9,10 @@ export interface Product {
   description: string;
   customizable?: boolean;
   gender?: 'male' | 'female' | 'unisex';
+  stock_count?: number;
+  rating?: number;
+  review_count?: number;
+  is_new?: boolean;
 }
 
 export interface CustomizationOptions {

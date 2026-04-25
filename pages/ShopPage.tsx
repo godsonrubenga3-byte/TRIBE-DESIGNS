@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { JERSEYS } from '../constants';
 import { useApp } from '../App';
-import { ShoppingCart, Edit3, Loader2 } from 'lucide-react';
+import { ShoppingCart, Edit3, Loader2, Star, StarHalf, Eye, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
 import { supabaseService } from '../services/supabaseService';
@@ -14,6 +14,7 @@ const ShopPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<'Heritage' | 'Modern'>('Heritage');
   const [activeSubCategory, setActiveSubCategory] = useState<string>('all');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -48,6 +49,20 @@ const ShopPage: React.FC = () => {
       } else {
           addToCart(product);
       }
+  };
+
+  const renderStars = (rating: number = 0) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      if (i <= rating) {
+        stars.push(<Star key={i} size={12} className="fill-amber-500 text-amber-500" />);
+      } else if (i - 0.5 <= rating) {
+        stars.push(<StarHalf key={i} size={12} className="fill-amber-500 text-amber-500" />);
+      } else {
+        stars.push(<Star key={i} size={12} className="text-zinc-300 dark:text-zinc-700" />);
+      }
+    }
+    return stars;
   };
 
   return (
@@ -94,7 +109,7 @@ const ShopPage: React.FC = () => {
                 alt={product.name}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-4">
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-4">
                 <button 
                   onClick={() => handleProductAction(product)}
                   className={`px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 shadow-xl transform scale-0 group-hover:scale-100 duration-300 ${
@@ -109,14 +124,29 @@ const ShopPage: React.FC = () => {
                        <> <ShoppingCart size={16} /> Add to Bag </>
                    )}
                 </button>
+                <button 
+                  onClick={() => setSelectedProduct(product)}
+                  className="px-6 py-3 bg-zinc-900/80 backdrop-blur text-white rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 shadow-xl transform scale-0 group-hover:scale-100 duration-500 hover:bg-zinc-800"
+                >
+                   <Eye size={16} /> Quick View
+                </button>
               </div>
-              <div className="absolute top-4 left-4 flex gap-2">
-                <span className="bg-black/80 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-white uppercase border border-white/20">
-                  {product.subcategory}
-                </span>
-                {product.gender && (
-                    <span className="bg-white/80 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-black uppercase">
-                        {product.gender}
+              <div className="absolute top-4 left-4 flex flex-col gap-2">
+                <div className="flex gap-2">
+                    <span className="bg-black/80 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-white uppercase border border-white/20">
+                    {product.subcategory}
+                    </span>
+                    {product.is_new && (
+                        <span className="bg-amber-500 px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-black uppercase">
+                            NEW
+                        </span>
+                    )}
+                </div>
+                {(product.stock_count !== undefined && product.stock_count <= 5) && (
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase self-start ${
+                        product.stock_count === 0 ? 'bg-red-500 text-white' : 'bg-orange-500 text-white'
+                    }`}>
+                        {product.stock_count === 0 ? 'SOLD OUT' : `ONLY ${product.stock_count} LEFT`}
                     </span>
                 )}
               </div>
@@ -124,19 +154,83 @@ const ShopPage: React.FC = () => {
             
             <div className="mt-4 md:mt-6 flex justify-between items-start">
               <div className="flex-1 pr-4">
+                <div className="flex items-center gap-2 mb-1">
+                    <div className="flex">{renderStars(product.rating)}</div>
+                    <span className="text-[10px] text-zinc-500 font-bold">({product.review_count || 0})</span>
+                </div>
                 <h3 className="font-syne font-bold text-lg md:text-xl uppercase tracking-tighter leading-tight">{product.name}</h3>
                 <p className="text-zinc-500 text-xs md:text-sm mt-1 line-clamp-2">{product.description}</p>
-                {product.customizable && (
-                    <span className="inline-block mt-2 text-[10px] font-black bg-green-100 text-green-700 px-2 py-0.5 rounded border border-green-200 uppercase">
-                        Customizable
-                    </span>
-                )}
               </div>
               <span className="font-syne font-black text-xl md:text-2xl text-amber-500">${product.price}</span>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Quick View Modal */}
+      {selectedProduct && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+              <div className="bg-white dark:bg-zinc-950 w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl relative animate-in zoom-in-95 duration-300">
+                  <button 
+                    onClick={() => setSelectedProduct(null)}
+                    className="absolute top-6 right-6 p-2 bg-zinc-100 dark:bg-zinc-900 rounded-full hover:bg-amber-500 hover:text-black transition-colors z-10"
+                  >
+                      <X size={20} />
+                  </button>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2">
+                      <div className="aspect-[4/5] bg-zinc-100 dark:bg-zinc-900">
+                          <img src={selectedProduct.image} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="p-8 md:p-12 flex flex-col">
+                          <div className="flex items-center gap-2 mb-4">
+                              <div className="flex">{renderStars(selectedProduct.rating)}</div>
+                              <span className="text-xs text-zinc-500 font-bold">{selectedProduct.review_count || 0} REVIEWS</span>
+                          </div>
+                          <h2 className="text-3xl md:text-5xl font-syne font-black tracking-tighter uppercase mb-4 leading-none">{selectedProduct.name}</h2>
+                          <p className="text-2xl font-syne font-black text-amber-500 mb-6">${selectedProduct.price}</p>
+                          
+                          <div className="space-y-6 mb-8">
+                              <div>
+                                  <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Description</h4>
+                                  <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{selectedProduct.description}</p>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                      <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Category</h4>
+                                      <p className="text-xs font-bold uppercase">{selectedProduct.category} / {selectedProduct.subcategory}</p>
+                                  </div>
+                                  <div>
+                                      <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Availability</h4>
+                                      <p className={`text-xs font-bold uppercase ${
+                                          (selectedProduct.stock_count || 0) > 0 ? 'text-green-500' : 'text-red-500'
+                                      }`}>
+                                          {(selectedProduct.stock_count || 0) > 0 ? 'In Stock' : 'Out of Stock'}
+                                      </p>
+                                  </div>
+                              </div>
+                          </div>
+
+                          <div className="mt-auto space-y-3">
+                              <button 
+                                onClick={() => {
+                                    handleProductAction(selectedProduct);
+                                    setSelectedProduct(null);
+                                }}
+                                className="w-full py-4 bg-amber-500 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black text-black font-black uppercase tracking-widest transition-all rounded-xl"
+                              >
+                                  {selectedProduct.customizable ? 'Customize Now' : 'Add to Bag'}
+                              </button>
+                              <p className="text-center text-[10px] text-zinc-400 uppercase font-bold tracking-widest">
+                                  Free standard shipping on all orders over $150
+                              </p>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      )}
 
       {filtered.length === 0 && !loading && (
         <div className="text-center py-20 opacity-50">
